@@ -1,17 +1,141 @@
+/**
+ * Jilex: Flex-style JavaScript, HTML 6
+ * http://jilex.devingfx.com
+ * Copyright (c) 2012-2012 Thomas DI GREGORIO and contributors
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * Parts of the Software build on techniques from the following open-source
+ * projects:
+ * 
+ * * JS.Class: Ruby-style JavaScript
+ * * http://jsclass.jcoglan.com
+ * * Copyright (c) 2007-2011 James Coglan and contributors
+ * 
+ * * The Prototype framework, (c) 2005-2010 Sam Stephenson (MIT license)
+ * * Alex Arnell's Inheritance library, (c) 2006 Alex Arnell (MIT license)
+ * * Base, (c) 2006-2010 Dean Edwards (MIT license)
+ * 
+ * The Software contains direct translations to JavaScript of these open-source
+ * Flex libraries:
+ * 
+ * * Flex Framework (c) Apache licence
+ * 
+ * * Ruby standard library modules, (c) Yukihiro Matsumoto and contributors (Ruby license)
+ * * Test::Unit, (c) 2000-2003 Nathaniel Talbott (Ruby license)
+ * * Context, (c) 2008 Jeremy McAnally (MIT license)
+ * * EventMachine::Deferrable, (c) 2006-07 Francis Cianfrocca (Ruby license)
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
-//-----------------------------------------------------------------------------
-//
-//	core POO classes: QName, Package, Class
-//
-//-----------------------------------------------------------------------------
 
-var F = function(){};
+
+var jx = jx || {core:{},util:{}};
+
+var QName = function(name)
+{
+	var a = name.split('.'), r = window, c;
+	while(a.length)
+	{
+		c = a.shift();
+		r[c] = r = r[c] || {};
+	}
+	return r;
+}
+
+/**
+ * importFromNS
+ * Helper function that copy the class
+ */
+function jimport(qName)
+{
+	var klass = QName(qName);
+	window[qName.split('.').pop()] = klass;
+	
+	if(klass == null) //Just created
+	{
+		var path = qName.split('.').join('/');
+		var url1 = path + ".js";
+		
+		var l = new Loader(url1, url2);
+		l.loadedPolicy = jx.core.Loader.LOADED_POLICY_FIRST;
+		l.addEventListener();
+		l.load();
+	}
+}
+function getClassQName(qName)
+{
+	qName = new jx.util.QName(qName);
+	var c = window[qName.path[0]] = window[qName.path[0]] || {};
+	for(var i = 1; i < qName.path.length; i++)
+		c = c[qName.path[i]] = c[qName.path[i]] || {};
+	c = c[qName.localName] = c[qName.localName] || function(){};
+	return (c == function(){}) ? null : c;
+}
+
+var extend = function(destination, source, overwrite)
+{
+	if (!destination || !source) return destination;
+	for (var field in source)
+	{
+		if (destination[field] === source[field]) continue;
+		if (overwrite === false && destination.hasOwnProperty(field)) continue;
+		destination[field] = source[field];
+	}
+	return destination;
+};
+
 var bindListener = function(obj, handler)
 {
 	return function()
 	{
 		handler.apply(obj, arguments);
 	};
+};
+var methodize = function(obj, methodName, func)
+{
+	var chain = [];
+	if(func.listener)
+		return function()
+		{
+			handler.apply(obj, arguments);
+		};
+	
+	if(func.setter)
+	{
+		return function()
+		{
+			handler.apply(obj, arguments);
+		};
+	}
+	
+	if(func.getter)
+		return function()
+		{
+			handler.apply(obj, arguments);
+		};
+	
+};
+
+var EventListener = function(func)
+{
+	func.listener = true;
+	return func;
 };
 var get = function(func)
 {
@@ -29,509 +153,307 @@ var Public = function(func)
 	return func;
 };
 
-/**
- * QName class
- * 
- * 
- */
-var QName = function(name)
+
+var Class = function(proto)
 {
-	console.log('QName of ', name);
-	var a = name.split('.'), r = window, c;
-	while(a.length)
+	this.parent = Object;
+	if(typeof proto == 'string')
 	{
-		c = a.shift();
-		r[c] = r = r[c] || {};
+		this.parent = window[proto] || Object;
+		proto = arguments[1];
 	}
-	return r;
-}
-
-var Package = function(name, scope)
-{
-	var a = name.split('.'), r = window, c;
-	while(a.length)
-	{
-		c = a.shift();
-		r[c] = r = r[c] || F;
-	}
-	if(scope) scope.call(r);
-	return r;
-}
-
-
-
-
-var Bridge = function(parent)
-{
-	var bridge = function() {};
-	bridge.prototype = parent.prototype;
-	//bridge.prototype.parentClass = parent;
-	return new bridge();
-};
-
-
-var Class = function(parentQName, klass)
-{
-	var parent;
+	this._constructor = proto._constructor;
 	
-	if(typeof parentQName == 'object' && typeof klass == 'undefined')
-	{
-		klass = parentQName;
-		parent = F;
-	}
-	else
-		parent = QName(parentQName);
+	this.proto = this.makeBridge(this.parent);
 	
-	console.log('new Class(',parent, klass);
+	/** a mettre dans l'instance
 	
-	if(klass)
-	{
-		
-		
-		
-		var _constructor = function()
-		{
-			console.log("lanuch constructor",klass, this._constructor);
-			console.log(this, this._constructor.call({}));
-			
-			
-			return !!this._constructor
-					? this._constructor.apply(this, arguments) || this
-					: this;
-		};
-		
-		_constructor.prototype = Bridge(parent);
-		if(klass._staticConstructor) klass._staticConstructor.call(_constructor);
-		//console.log(!klass._staticConstructor, "do _static on constructor : ", _constructor);
-		/*
-		this.prototype[coucou = "private";]
-		this.prototype.prop = 0;
-		*/
-		
-		_constructor.superclass = parent;
-		
-		_constructor.subclasses = [];
-		if (parent.subclasses) parent.subclasses.push(_constructor);
-		
-		//console.log(_constructor.prototype, klass);
-		Class.extend(_constructor.prototype, klass);
-		
-		
-		return _constructor;
-			
-			
-		//return function(){/*create constructor*/};
-	}
-}
-
-Class.prototype = function(){};
-Class.extend = function(destination, source, overwrite)
-{
-	//console.log("extending ", destination, " with ", source);
-	if (!source) return;
-	for (var field in source)
-	{
-		if (destination[field] === source[field]) continue;
-		
-		if(field == "_constructorrr" || field == "_staticConstructor") continue;
-		
-		if (overwrite === false && destination.hasOwnProperty(field)) continue;
-		destination[field] = source[field];
-	}
-	return this;
-};
-
-//-----------------------------------------------------------------------------
-//
-//	EventDispatcher Class
-//
-//-----------------------------------------------------------------------------
-
-var EventListener = function(func)
-{
-	func.listener = true;
-	return func;
-};
-
-
-
-console.log('class EventDispatcher');
-
-var EventDispatcher = new Class({
-	name: "EventDispatcher",
-	_staticConstructor: function()
-	{
-		var _privateStatic = 0;
-		
-		this.instanceCount = function()
-		{
-			return "Only " + _privateStatic + " EventDispatcher object(s) created yet.";
-		};
-	},
-	_constructor: function()
-	{
-/*private*/		var _listeners = {};
-				
-/*public*/		this.addEventListener = function(type, handler)
-				{
-					_listeners[type] = _listeners[type] || [];
-					_listeners[type].push(handler);
-					return this;
-				};
-				
-/*public*/		this.removeEventListener = function(type, handler)
-				{
-					_listeners[type] = _listeners[type] || [];
-					_listeners[type].push(handler);
-					return this;
-				};
-
-/*public*/		this.dispatchEvent = function(type)
-				{
-					if(_listeners[type])
-						for(var i in _listeners[type])
-							_listeners[type][i]();
-					
-					return this;
-				};
-				
-				for(var i in this)
-					if(typeof this[i] == "function" && this[i].listener)
-						this[i] = bindListener(this, this[i]);
-	}
+	this.scope = new thisclass()
 	
-});
-
-
-
-o = {sayEvent:function(e){alert(e+' received by '+this);}}
-o.sayEvent.toString = function(){return 'sayEvent the listener';};
-
-aze = new EventDispatcher();
-aze.addEventListener('load', o.sayEvent);
-aze.addEventListener('loaded', function()
-{
-	//alert('do pas grand chose');
-});
-aze.addEventListener('loaded', function()
-{
-	//alert('do pas grand chose2');
-});
-//aze.loadHandler = EventHandler(aze, function(){console.log('handler');});
-aze.dispatchEvent('loaded');
-
-
-
-
-
-//-----------------------------------------------------------------------------
-//
-//	Loading Classes
-//
-//-----------------------------------------------------------------------------
-
-/**
- * QFile class
- * 
- * Helper object that transform a QName into a uri to load.
- */console.log('class QFile');
-var QFile = new Class({
-	name: "QFile",
-	_staticConstructor: function()
-	{
-		var aze ="aze";
-		this.aze = function(v)
-		{
-			if(v)
-				aze = v;
-			else
-				return aze;
-		};
-	},
-	_constructor: function(s)
-	{
-		this.path = s.split('.');
-		this.localName = this.path.pop();
-		this.uri = this.path.join('/') + '/' + this.localName + '.js';
-		
-		
-	},
-	say: function(msg)
-	{
-		console.log(this+" says "+msg);
-	},
-	toString: function()
-	{
-		return "<QFile uri=\""+this.uri+"\"/>";
-	}
-});
-
-/**
- * require
- * 
- * Main loading function.
- */
-function require(qName)
-{
-	/*
-	var klass = QName(qName),
-		file = new QFile(qName);
+	a cacher de l'exterieur:
+	this.private = { priv:1, porp:4};
 	
-	window[file.localName] = klass;
+	this.method() >>> method.call(this.scope)
 	
-	if(klass == null) //Just created
-	{
-		var path = file.uri;
-		var url1 = path + ".js";
-		var url2 = path + ".css";
-		
-		var l = new Loader(url1, url2);
-		l.loadedPolicy = jx.core.Loader.LOADED_POLICY_FIRST;
-		l.addEventListener();
-		l.load();
-	}
+	myInst.method() >>> method.call(this.publicScope)
+	
 	*/
-}
-/**
- * @deprecated
- */
-function getClassQName(qName)
-{
-	qName = new jx.util.QName(qName);
-	var c = window[qName.path[0]] = window[qName.path[0]] || {};
-	for(var i = 1; i < qName.path.length; i++)
-		c = c[qName.path[i]] = c[qName.path[i]] || {};
-	c = c[qName.localName] = c[qName.localName] || F;
-	return (c == F) ? null : c;
-}
-
-Package('jx.core', function()
-{
-	var _private = "private"; /* private static */
-	
-	this.name = "jilex.core"; /**/
-	
-	require('jx.core.QFile', function(){
-	
-		this.
-		
-	
-	
-	}, this);
-	
-	
-	/**
-	 * 
-	 */
-	this.Namespace = function(name, uri)
+	for(var field in proto)
 	{
-		this.manifest = null;
-		this.treated = false;
-		this.loaded = false;
-		this.name = name.toLowerCase();
-		this.uri = uri;
-	};
-	this.Namespace.prototype = {
-		loadQName: function(qName)
-		{
-			new Loader(qName.uri + '.js').load();
-		},
-		getClassQName: getClassQName,
+		var obj = proto[field];
 		
-		toString: function()
+		if(typeof obj == 'function')
 		{
-			return "<Namespace "+this.name+"=\""+this.uri+"\"/>";
-		}
-		
-	};
-	console.log('class Loader');
-	this.Loader = new Class("EventDispatcher", {
-		name: "Loader",
-		_staticConstructor: function()
-		{
-			this.LOADED_POLICY_EACH = "each";
-			this.LOADED_POLICY_FIRST = "first";
-			this.LOADED_POLICY_ONE = "one";
+			var getter, setter, sget, varName, 
+				isSetter = field.indexOf('set_') == 0,
+				isGetter = field.indexOf('get_') == 0;
 			
-			var _inConstructor = function(){};
-			
-			var HOST_REGEX = /^https?\:\/\/[^\/]+/i;
-			var LOCAL_REGEX = /^file\:\/\/\//i;
-			var HOST;
-			this.HOST = function()
+			if(isSetter || isGetter)
 			{
-				HOST = HOST || HOST_REGEX.exec(window.location.href);
-				if(HOST == null)
-					HOST = HOST || LOCAL_REGEX.exec(window.location.href)[0];
-				return HOST;
+				varName = field.substr(4);
+				
+				if(isSetter && typeof this.proto[varName] == 'undefined')
+				{
+					setter = obj;
+					getter = this.proto['get_'+varName] || function(){return undefined;};
+					delete this.proto['set_'+varName];
+				}
+				if(isGetter && typeof this.proto[varName] == 'undefined')
+				{
+					getter = obj;
+					setter = this.proto['set_'+varName] || function(){return undefined;};
+				}
+			
+				sget = function()
+				{
+					if(arguments.length > 0)
+						setter.call(this, arguments[0]);
+					else
+						return getter.call(this);
+				}
+				this.proto[varName] = sget;
 			}
-		},
-		_constructor: function(source, mimeType)
-		{
-			//this.parent._constructor.apply(this); // AS3: super();
 			
-			this.mimeType = mimeType || "text/javascript";
-			///this.loadHandler = EventHandler(this, this.loadHandler);
-			for(var i in this)
-				if(typeof this[i] == "function" && this[i].listener)
-					this[i] = bindListener(this, this[i]);
-			//this.errorHandler = EventHandler(this, this.errorHandler);
-			this.source = source;
-			
-			this.element = document.createElement('script');
-			this.element.src = this.source;
-			this.element.type = this.mimeType;
-			this.element.addEventListener('load', this.loadHandler);
-			this.element.addEventListener('error', this.errorHandler);
-			
-		},
+			else if(obj.scope && obj.scope == "public" && field.indexOf('_') != 0)
+			{
+				this.proto[field] = obj;
+			}
+		}
+		else
+			this.proto[field] = obj;
+	}
+	
+	this._constructor.prototype = this.proto;
+	
+	return this._constructor;
+}
+
+Class.prototype = {
+	makeBridge: function(parent)
+	{
+		var bridge = function() {};
+		bridge.prototype = parent.prototype;
+		return new bridge();
+	}
+}
+
+var One = new Class({
+	
+	_constructor: Public(function()
+	{
 		
-		loadedPolicy: "each",
+	}),
+	
+	_width: 0,
+	
+	set_width: function(value)
+	{
+		this._width = value;
+	},
+	get_width: function()
+	{
+		return this._width;
+	}
+});
+
+var Two = new Class('One', {
+	
+	_constructor: Public(function()
+	{
 		
-		__FILE__: function()
-		{
-			var src	= Jilex.tag.src,
-				url	= window.location.href;
+	}),
+	
+	_width: 0,
+	
+	set_width: function(value)
+	{
+		this._width = value;
+	},
+	get_width: function()
+	{
+		return this._width;
+	},
+	_foo_String: "bar",
+	
+	private_function_sayHello: function() {}
+});
 
-			if (/^\w+\:\/\//.test(src)) return src;
-			if (/^\//.test(src)) return window.location.origin + src;
-			return url.replace(/[^\/]*$/g, '') + src;
-		},
+
+
+
+
+
+
+
+
+/*
+Class.extend = function(constructor)
+{
+	var c = new this();
+	c.consts.push(constructor);
+	return c;
+}
+Class.prototype = 
+{
+	parent: null,
+	consts: [],
+	extend: function(constructor)
+	{
+		var c = new this();
+		c.consts.push(constructor);
+	}
+}
+
+var EventDispatcher = Class.extend(function()
+{
+
+});
+EventDispatcher.prototype = {
+	addEventListener: function(){},
+	removeEventListener: function(){},
+	dispatchEvent: function(){},
+	bind: function(obj, handler){return function(){handler.call(obj, arguments);};}
+};
+*/
+
+jx.core.Loader = function(source, mimeType)
+{
+	
+	this.listeners = {};
+	this.mimeType = mimeType || "text/javascript";
+	///this.loadHandler = EventHandler(this, this.loadHandler);
+	for(var i in this)
+		if(typeof this[i] == "function" && this[i].listener)
+			this[i] = bindListener(this, this[i]);
+	//this.errorHandler = EventHandler(this, this.errorHandler);
+	this.source = source;
+	
+	this.element = document.createElement('script');
+	this.element.src = this.source;
+	this.element.type = this.mimeType;
+	this.element.addEventListener('load', this.loadHandler);
+	this.element.addEventListener('error', this.errorHandler);
+	
+};
+jx.core.Loader.LOADED_POLICY_EACH = "each";
+jx.core.Loader.LOADED_POLICY_FIRST = "first";
+jx.core.Loader.LOADED_POLICY_ONE = "one";
+
+jx.core.Loader.HOST_REGEX = /^https?\:\/\/[^\/]+/i;
+jx.core.Loader.HOST = jx.core.Loader.HOST || jx.core.Loader.HOST_REGEX.exec(window.location.href);
+
+
+
+
+jx.core.Loader.prototype = {
+	
+	loadedPolicy: jx.core.Loader.LOADED_POLICY_EACH,
+	
+	__FILE__: function()
+	{
+		var src	= Jilex.tag.src,
+			url	= window.location.href;
+
+		if (/^\w+\:\/\//.test(src)) return src;
+		if (/^\//.test(src)) return window.location.origin + src;
+		return url.replace(/[^\/]*$/g, '') + src;
+	},
+	
+	cacheBust: function(path)
+	{
+		var token = new Date().getTime();
+		return path + (/\?/.test(path) ? '&' : '?') + token;
+	},
+	
+	load: function()
+	{
+		document.getElementsByTagName('head')[0].appendChild(this.element);
+		return this;
+	},
+	loadStyle: function(path)
+	{
+		this.link = document.createElement('link');
+		this.link.rel = 'stylesheet';
+		this.link.type = 'text/css';
+		this.link.href = path;
 		
-		cacheBust: function(path)
-		{
-			var token = new Date().getTime();
-			return path + (/\?/.test(path) ? '&' : '?') + token;
-		},
+		document.getElementsByTagName('head')[0].appendChild(this.link);
+	},
+
+
+	loadHandler: EventListener(function(event)
+	{
+		this.dispatchEvent('loaded');
+		this.element.parentNode.removeChild(this.element);
+	}),
+	errorHandler: EventListener(function(event)
+	{
+		this.dispatchEvent('error');
+		this.element.parentNode.removeChild(this.element);
+	}),
+	
+	addEventListener: function(type, handler)
+	{
+		this.listeners[type] = this.listeners[type] || [];
+		this.listeners[type].push(handler);
+		return this;
+	},
+	dispatchEvent: function(type)
+	{
+		if(this.listeners[type])
+			for(var i in this.listeners[type])
+				this.listeners[type][i]();
 		
-		load: function()
-		{
-			document.getElementsByTagName('head')[0].appendChild(this.element);
-			return this;
-		},
-		loadStyle: function(path)
-		{
-			this.link = document.createElement('link');
-			this.link.rel = 'stylesheet';
-			this.link.type = 'text/css';
-			this.link.href = path;
-			
-			document.getElementsByTagName('head')[0].appendChild(this.link);
-		},
-
-
-		loadHandler: EventListener(function(event)
-		{
-			this.dispatchEvent('loaded');
-			this.element.parentNode.removeChild(this.element);
-		}),
-		errorHandler: EventListener(function(event)
-		{
-			this.dispatchEvent('error');
-			this.element.parentNode.removeChild(this.element);
-		})
-
-	});//End Class
-
-});//End Package
-
+		return this;
+	},
+	_empty: function() {}
+};
 /*
 aze = new Loader("./jilex/jx/core/Button.js");
 aze.addEventListener('loaded', function(){alert(this+'qsjh<sdkjfsdfh');});
 //aze.loadHandler = EventHandler(aze, function(){console.log('handler');});
-aze.load();
-*/
+aze.load();*/
 
 
-//-----------------------------------------------------------------------------
-//
-//	Test Class
-//
-//-----------------------------------------------------------------------------
 
-Package("jx.core", function()
+/**
+ * 
+ */
+jx.util.QName = function(s)
 {
-					
-					this.UIComponent = function(){};
-					jx.core.UIComponent.prototype.componentName = function(){return privateName;};
-					
-					this.name = "jx.core";
-					
-					
-/*window*/			az = 'foor';			/*window*/
-/*public*/			this.prop = 0;			/*public*/
-					
-/*private*/			var coucou = "privÃ©e";	//private
-					
-/*public get set*/	this.nsCoucou = function(v)
-					{
-						if(arguments.length > 0)
-						{
-							coucou = v;
-							this.prop++;
-						}
-						else
-							return coucou;
-					}
-/*public*/			this.get = function(what)
-					{
-						return eval(what);
-					};
-					
-					
-					
-/*global*/			jx.core.Button = new Class("jx.core.UIComponent", {
-						classConstructor: function()
-						{
-							var coucou = "private";			//private
-							
-							this.classConst = true;			//public
-							
-						},
-						constructor: function()
-						{
-							this.instance = "true";
-						},
-						publi: "public",
-						say: function(msg){alert(msg);}
-					});
-					/*
-						var coucou = "private";	//private
-						hello = 'world';		//global (window)
-						this.prop = 0;			//public
-						this.prototype = {func:function(){alert(coucou);},num:2};
-						this.coucou = function(v)
-						{
-							if(arguments.length > 0)
-							{
-								coucou = v;
-								this.prop++;
-							}
-							else
-								return coucou;
-						}
-						this.get = function(what)
-						{
-							return eval(what);
-						};
-					}
-				});
-				*/
-});
+	 this.path = s.split('.');
+	 this.localName = this.path.pop();
+	 this.uri = this.path.join('/') + '/' + this.localName + '.js';
+};
 
-
-/*require("mx.core.UIComponent", function()
-JS.require('JS.Clasqs', function()
+/**
+ * 
+ */
+jx.core.Namespace = function(name, uri)
 {
+	this.manifest = null;
+	this.treated = false;
+	this.loaded = false;
+	this.name = name.toLowerCase();
+	this.uri = uri;
+};
+jx.core.Namespace.prototype = {
+	loadQName: function(qName)
+	{
+		new Loader(qName.uri + '.js').load();
+	},
+	getClassQName: getClassQName
 	
-});
-*/
+};
+
+
+jimport("aze.aze.eqze");
 
 (function()
 {
-	require("jx.core.Loader");
-	require("jx.util.QName");
-	require("jx.core.Namespace");
+	jimport("jx.core.Loader");
+	jimport("jx.util.QName");
+	jimport("jx.core.Namespace");
 	
 	var Jilex = {
 		/**
@@ -543,7 +465,7 @@ JS.require('JS.Clasqs', function()
 		 */
 		registerNamespace: function(attr)
 		{
-			var ns = new jx.core.Namespace(attr.name.split(':')[1], attr.value);
+			var ns = new Namespace(attr.name.split(':')[1], attr.value);
 			console.log("xmlns:", ns);
 			this.xmlns[ns.name] = ns;
 		},
@@ -552,7 +474,6 @@ JS.require('JS.Clasqs', function()
 			var ns = this.xmlns[id];
 			if(ns)
 			{
-				/*
 				var l = new Loader(ns.uri + "/manifest.js");
 				l.addEventListener('loaded', EventHandler(this, function()
 				{
@@ -576,7 +497,6 @@ JS.require('JS.Clasqs', function()
 					this.allNamespaceTreatedHandler();
 				}));
 				l.load();
-				*/
 			}
 		},
 		
@@ -621,7 +541,7 @@ JS.require('JS.Clasqs', function()
 					/*
 					if le ns existe dans xmlns et si klass existe dans manifest
 					alors la loader
-						qd elle est loadÃ© voir les dÃ©pendences
+						qd elle est loadé voir les dépendences
 							loader es dependances
 						instancier sur l'element DOM
 					*/
@@ -647,13 +567,13 @@ JS.require('JS.Clasqs', function()
 		
 	};
 	
-	Jilex.initialize = bindListener(Jilex, function(event)
+	Jilex.initialize = EventHandler(Jilex, function(event)
 	{
 		for(var ns in this.xmlns)
 			this.loadNamespace(ns);
 	});
 	
-	Jilex.namespaceLoaded = bindListener(Jilex, function(event)
+	Jilex.namespaceLoaded = EventHandler(Jilex, function(event)
 	{
 		for(var ns in this.xmlns)
 			this.loadNamespace(ns);
