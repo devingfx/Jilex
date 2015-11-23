@@ -1,7 +1,7 @@
 /**
- * Jilex: Flex-style JavaScript, HTML 6
+ * <j:Lex/>: Flex-style JavaScript, HTML 6
  * http://jilex.devingfx.com
- * Copyright (c) 2012-2012 Thomas DI GREGORIO and contributors
+ * Copyright (c) 2012-2013 Thomas DI GREGORIO and contributors
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,847 +43,655 @@
  * THE SOFTWARE.
  */
 
+//load('JilexFramework-0.3.js')
 
+// If this file is loaded from JSDB
+if(typeof navigator == 'undefined'){load('Jilex.js');}
+
+
+
+var F = function(){/*emptty*/};
+
+var Bindable = function(f){f.bindable=true;return f;};
+var Typed = function(t,f){f.typed=true;return f;};
+var Method = function(f){f.method=true;return f;};
+
+var QName = function(name)
 {
-	{"mx:Application" : { "direction":"vertical", "backgroundAlpha":0 },
-			"a":{"mx:Label" : {"id":"text", "text":"{myButton.label}"}},
-			
-			"b":{"mx:Button" : {"id":"myButton", "label":"Coucou"}}
-		
+	console.log('QName of ', name);
+	var a = name.split('.'), r = window, c;
+	while(a.length)
+	{
+		c = a.shift();
+		r[c] = r = r[c] || F;
 	}
+	return r;
+}
+
+/**
+ * Class class
+ * 
+ * 
+ */
+var Class = function()// new Class({ ... })   or   new Class(com.pack.Parent, { ... })
+{
+	var parent = arguments.length == 2 ? arguments[0] : Object,
+		factory = arguments[1] || arguments[0];
+	
+	var currentFactory = Class.extend({}, parent.factory || {});
+	Class.extend(currentFactory, factory, true);
+	
+	//console.log(parent.factory, currentFactory, factory);
+	
+	// TO DO :	lier super avec la super class pour appel direct: this.super() >> function() { return parent.factory._constructor.apply(this, arguments); }
+	// 			et this.super.nonOverridedMethod(arg) >> function(){ return parent.factory.nonOverridedMethod.apply(this, arguments); }
+	
+	//currentFactory.super = Class.bind(factory, parent.factory);
+	//Class.extendBind(currentFactory.super, parent.factory, currentFactory);
+	
+	//this.factory = factory;
+	
+	// Create the Class object
+	var klass = function()
+	{
+		var privateScope = {};
+		for(var field in currentFactory)
+		{
+			var candidate = currentFactory[field], member = Class.memberResolve(field);
+			
+			if(field != 'super' && !member.static)
+			{
+				Class.memberCreate(this, privateScope, member, currentFactory[field]);
+				/*
+				if(member.scope == "public")
+				{
+					if(typeof candidate == 'function')
+					{
+						//var m = candidate, s = privateScope;
+						this[member.name] = Class.bind(privateScope, candidate);
+					}
+					else
+						this[member.name] = candidate;
+				}
+				else
+				{
+					if(typeof candidate == 'function')
+					{
+						//var m = candidate, s = privateScope;
+						privateScope[member.name] = Class.bind(privateScope, candidate);
+					}
+					else
+						privateScope[member.name] = candidate;
+				}*/
+			}
+		}
+		if(!currentFactory.toString) this.toString = function() { return "[object Class]"; };
+		this.__type__ = klass;
+	}
+	var classPrivateScope = {};
+	// Create static members
+	for(var field in currentFactory)
+	{
+		var member = Class.memberResolve(field);
+		
+		if(member.static)
+			Class.memberCreate(klass, classPrivateScope, member, currentFactory[field]);
+	}
+	
+	// Override toString
+	klass.toString = function(){return "Class";};
+	
+	// Save the factory
+	klass.factory = currentFactory;
+	return klass;
+}
+
+/**
+ * memberPatterns
+ * The regex pattern used to parse factory member's names.
+ */
+Class.memberPatterns = {
+	bindable: /(Bindable_)*/i,
+	scope: /(static_)*(private_)*(protected_)*(public_)*(static_)*/i,
+	type: /(function_)*(const_)*(var_)*/i,
+	getterSetter: /(get_)*(set_)*/i,
+	override: /(override_)*/i
+};
+
+/**
+ * memberResolve
+ * Parses a string to find class member's attributes and returns an object with:
+ * 		static = {Boolean} if "static_" was found.
+ * 		scope = {String} can be "private", "protected" or "public"
+ * 		type = {String} can be "const", "var" or "function"
+ * 		getter = {Boolean} if "get_" was found.
+ * 		setter = {Boolean} if "set_" was found.
+ * 		name = {String} the rest of string.
+ * 
+ * @param {String} field The member's name where to find memberPatterns. i.e.: private_function_foo or public_function_get_property
+ * 
+ * @return {Object} info An object with member properties.
+ */
+Class.memberResolve = function(field)
+{
+	var res, info = { bindable: false, scope:"public", getter:false, setter:false, type: false, field:field, override:false}, member;
+	
+	// Search for Bindable
+	res = field.match(Class.memberPatterns.bindable),
+	info.bindable = !!res[1];
+	if(info.bindable) field = field.replace(Class.memberPatterns.bindable, '');
+	
+	
+	// Search for scope ans static
+	res = field.match(Class.memberPatterns.scope),
+	info.static = !!res[1] || !!res[5];
+	info.scope = res[2] || res[3] || res[4];
+	if(typeof info.scope != 'undefined')
+	{
+		info.scope = info.scope.replace('_','');
+		field = field.replace(Class.memberPatterns.scope, '');
+	}
+	else
+		info.scope = "public";
+	
+	// Search for type
+	res = field.match(Class.memberPatterns.type);
+	info.type = res[1] || res[2] || res[3];
+	if(typeof info.type != 'undefined')
+	{
+		info.type = info.type.replace('_','');
+		field = field.replace(Class.memberPatterns.type, '');
+	}
+	else
+		info.scope = false;
+	
+	// Search for get set tokens
+	res = field.match(Class.memberPatterns.getterSetter);
+	info.getter = !!res[1];
+	info.setter = !!res[2];
+	field = field.replace(Class.memberPatterns.getterSetter, '');
+	
+	// Search for override token
+	res = field.match(Class.memberPatterns.override);
+	info.override = !!res[1];
+	if(info.override) field = field.replace(Class.memberPatterns.override, '');
+	
+	
+	// The rest
+	info.name = field;
+	
+	return info;
+}
+
+/**
+ * memberCreate
+ * Create a class member from member's info object
+ * 
+ * @param {Object} publicScope The public object where to attach this member.
+ * @param {Object} privateScope The private object where to attach this member.
+ * @param {Object} info The member's info where to find options.
+ * @param {Object} candidate The definition (or value) of the member.
+ * 
+ * @return 
+ */
+Class.memberCreate = function(publicScope, privateScope, info, candidate)
+{
+	if(info.scope == 'public')
+	{
+		if(info.type == 'function' && typeof candidate == 'function')
+		{
+			if(info.getter || info.setter)
+				Class.createGetSetter(publicScope, info, Class.bind(privateScope, candidate))
+			else
+				publicScope[info.name] = Class.bind(privateScope, candidate);
+			
+			if(info.getter || info.setter)
+				Class.createGetSetter(privateScope, info, Class.bind(privateScope, candidate))
+			else
+				privateScope[info.name] = Class.bind(privateScope, candidate);
+		}
+		else if(info.type == 'var')
+		{
+			// Just
+			publicScope[info.name] = candidate;
+		}
+		else // const
+			// Define a getter to serve the value and a setter that throw an error.
+			Class.createGetSetter(publicScope, info, Class.bind(privateScope, function(){ return candidate; }))
+	}
+	else if(info.scope == 'protected')
+	{
+		// Aller chercher le parent
+	}
+	else //private
+	{
+		if(info.type == 'function' && typeof candidate == 'function')
+		{
+			if(info.getter || info.setter)
+				Class.createGetSetter(privateScope, info, Class.bind(privateScope, candidate))
+			else
+				privateScope[info.name] = Class.bind(privateScope, candidate);
+		}
+		else if(info.type == 'var')
+			privateScope[info.name] = candidate;
+		else //const
+			// Define a getter to serve the value and a setter that throw an error.
+			Class.createGetSetter(privateScope, info, Class.bind(privateScope, function(){ return candidate; }))
+	}
+	
+	
+	return info;
 }
 
 
-
-/**
- * Object.is
- * 
- * All objects method to test inheritance.
- * Usage:
- * var foo = "Hello", bar = 42;
- * foo.is(String); > true
- * foo.is(Number); > false;
- * bar.id(Number): > true
- */
-Object.prototype.is = function(type)
+Class.createGetSetter = function(scope, info, func)
 {
-	if (typeof type === 'string')
-		return typeof this === type;
-
-	return (typeof type === 'function' && this instanceof type) ||
-			this.constructor === type;
-};
-
-//Main package jx
-jx = {core:{}, util:{}};
-jx.END_WITHOUT_DOT = /([^\.])$/;
-
-/**
- * jx.core.array
- */
-jx.core.array = function(enumerable)
-{
-	var array = [], i = enumerable.length;
-	while (i--) array[i] = enumerable[i];
-	return array;
-};
-
-/**
- * jx.core.bind
- */
-jx.core.bind = function(method, object)
-{
-	return function()
+	if(info.getter)
+		scope.__defineGetter__(info.name, func);
+	if(info.setter)
+		scope.__defineSetter__(info.name, func);
+	if(info.type == 'const')
 	{
-		return method.apply(object, arguments);
-	};
-};
+		scope.__defineGetter__(info.name, func);
+		scope.__defineSetter__(info.name, function(){throw new Error("Constants can not be set.")});
+	}
+}
 
 /**
- * jx.core.extend
+ * extend
+ * Loops on each member of an object and copy it on another object.
+ * 
+ * @param {Object} destination The object to extend.
+ * @param {Object} source The source object to copy members from.
+ * @param {Boolean} override If omitted or false, don't copy source if it exists in destination.
+ * 
+ * @return {Object} The destination object.
  */
-jx.core.extend = function(destination, source, overwrite)
+Class.extend = function(destination, source, override)
 {
-	if (!destination || !source) return destination;
+	//console.log("extending ", destination, " with ", source);
+	if (!source || !destination) return;
 	for (var field in source)
 	{
 		if (destination[field] === source[field]) continue;
-		if (overwrite === false && destination.hasOwnProperty(field)) continue;
+		
+		if (override === false && destination.hasOwnProperty(field)) continue;
 		destination[field] = source[field];
 	}
 	return destination;
 };
 
 /**
- * jx.core.indexOf
- */
-jx.core.indexOf = function(list, item)
-{
-	if (list.indexOf) return list.indexOf(item);
-	var i = list.length;
-	while (i--)
-	{
-		if (list[i] === item) return i;
-	}
-	return -1;
-};
-
-/**
- * jx.core.isType
- */
-jx.core.isType = function(object, type)
-{
-	if (typeof type === 'string')
-		return typeof object === type;
-	
-	if (object === null || object === undefined)
-		return false;
-	
-	return (typeof type === 'function' && object instanceof type) ||
-			(object.is && object.is(type)) ||
-			object.constructor === type;
-};
-
-/**
- * jx.core.makeBridge
- */
-jx.core.makeBridge = function(parent)
-{
-	var bridge = function() {};
-	bridge.prototype = parent.prototype;
-	return new bridge();
-};
-
-/**
- * jx.core.makeClass
- */
-jx.core.makeClass = function(parent)
-{
-	parent = parent || Object;
-
-	var func = function()
-	{
-		return this.constructor
-				? this.constructor.apply(this, arguments) || this
-				: this;
-	};
-	func.prototype = jx.core.makeBridge(parent);
-	
-	func.superclass = parent;
-	
-	func.subclasses = [];
-	if (parent.subclasses) parent.subclasses.push(func);
-
-	return func;
-};
-
-/**
- * jx.core.match
- */
-jx.core.match = function(category, object)
-{
-	if (object === undefined) return false;
-	return typeof category.test === 'function'
-			? category.test(object)
-			: category.match(object);
-};
-
-
-/**
- * jx.core.Method Class
+ * extendBind
+ * Loops on each member of an object and copy it on another object. If the member is a function,
+ * Class.bind is called to call the function on a given scope.
  * 
+ * @param {Object} destination The object to extend.
+ * @param {Object} source The source object to copy members from.
+ * @param {Object} scope The object to bind as this in the function.
+ * @param {Boolean} override If omitted or false, don't copy source if it exists in destination.
  * 
+ * @return {Object} The destination object.
  */
-jx.core.Method = jx.core.makeClass();
-
-jx.core.extend(jx.core.Method.prototype,{
-	constructor: function(module, name, callable)
+Class.extendBind = function(destination, source, scope, override)
+{
+	//console.log("extending ", destination, " with ", source);
+	if (!source || !destination) return;
+	scope = scope || destination;
+	for (var field in source)
 	{
-		this.module   = module;
-		this.name     = name;
-		this.callable = callable;
+		if (destination[field] === source[field]) continue;
 		
-		this._words = {};
-		if (typeof callable !== 'function') return;
+		if (override === false && destination.hasOwnProperty(field)) continue;
 		
-		this.arity = callable.length;
-		
-		var matches	= callable.toString().match(/\b[a-z\_\$][a-z0-9\_\$]*\b/ig),
-			i		= matches.length;
-		
-		while (i--) this._words[matches[i]] = true;
-	},
-	
-	setName: function(name)
-	{
-		this.callable.displayName = this.displayName = name;
-	},
-	
-	contains: function(word)
-	{
-		return this._words.hasOwnProperty(word);
-	},
-	
-	call: function()
-	{
-		return this.callable.call.apply(this.callable, arguments);
-	},
-	
-	apply: function(receiver, args)
-	{
-		return this.callable.apply(receiver, args);
-	},
-	
-	compile: function(environment)
-	{
-		var method		= this,
-			trace		= method.module.__trace__ || environment.__trace__,
-			callable	= method.callable,
-			words		= method._words,
-			allWords	= jx.core.Method._keywords,
-			i			= allWords.length,
-			keywords	= [],
-			keyword;
-		
-		while  (i--)
+		if(field != 'super')
 		{
-			keyword = allWords[i];
-			if (words[keyword.name]) keywords.push(keyword);
+			if(typeof source[field] == 'function')
+				destination[field] = Class.bind(scope, source[field]);
+			else
+				destination[field] = source[field];
 		}
-		if (keywords.length === 0 && !trace) return callable;
+	}
+	return destination;
+};
 
-		var compiled = function()
-		{
-			var N = keywords.length, j = N, previous = {}, keyword, existing, kwd;
-			
-			while (j--)
-			{
-				keyword  = keywords[j];
-				existing = this[keyword.name];
-				
-				if (existing && !existing.__kwd__) continue;
-				
-				previous[keyword.name] = {
-					_value: existing,
-					_own:   this.hasOwnProperty(keyword.name)
-				};
-				kwd = keyword.filter(method, environment, this, arguments);
-				kwd.__kwd__ = true;
-				this[keyword.name] = kwd;
-			}
-			var returnValue	= callable.apply(this, arguments),
-				j			= N;
-			
-			while (j--)
-			{
-				keyword = keywords[j];
-				if (!previous[keyword.name]) continue;
-				if (previous[keyword.name]._own)
-					this[keyword.name] = previous[keyword.name]._value;
-				else
-					delete this[keyword.name];
-			}
-			return returnValue;
-		};
-		
-		if (trace) return jx.core.StackTrace.wrap(compiled, method, environment);
-		return compiled;
+/**
+ * bind
+ * Creates a function that call a function on a given object scope
+ * 
+ * @param {Object} obj The object to bind.
+ * @param {Function} handler The function to call on obj.
+ * 
+ * @return {Object} The function to call from whatever scope.
+ */
+Class.bind = function(obj, handler)
+{
+	return function()
+	{
+		return handler.apply(obj, arguments);
+	};
+};
+
+
+//-------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+var Aze = new Class({
+
+	private_var__coucou : 2,
+	public_function_set_coucou: function(v)
+	{
+		alert("Setter coucou");
+		this._coucou = v;
+	},
+	public_function_get_coucou: function()
+	{
+		alert("Getter coucou");
+		return this._coucou;
+	},
+	private_const_COUCOU : "private const COUCOU",
+	public_function_get_const: function()
+	{
+		alert("Getter const");
+		return this.COUCOU;
 	},
 	
-	toString: function()
+	
+	//private_function_foo : function(msg){console.log(this + ' says ' + msg);},
+	
+	
+	public_const_TEMP : "public temporary",
+	
+	//public_function_dodo : function(msg){console.log(this._coucou + ' says ' + msg);},
+	
+	
+	public_static_const_CLASS : "Aze",
+	
+	Bindable_private_static_var_namur: "lemurien",
+	
+	private_static_function_make : function(num)
 	{
-		var name = this.displayName || (this.module.toString() + '#' + this.name);
-		return '#<Method:' + name + '>';
+		if(num > 10)
+			return this.say('TOO MUSH');	//call of public member
+		else
+		{
+			var s="";
+			while(num--)
+				s += " " + this.namur;
+			return s;
+		}
+	},
+	
+	public_static_function_say : function(msg, num)
+	{
+		console.log(this + ' says ' + msg + " and "+ this.make(num));
+		return 'said.';
+	},
+	
+	public_static_function_set_namurel: function(v)
+	{
+		if(v.charAt(0) == 'l' || v.charAt(0) == 'L')
+			this.namur = v;
+	},
+	
+	public_static_function_get_namurel: function()
+	{
+		return this.namur.charAt(1) == 'l' || this.namur.charAt(1) == 'L';
 	}
+	
+	//protected_function_set_coucou : function(msg){console.log(this + ' says ' + msg);}
+
 });
 
-jx.core.Method.create = function(module, name, callable)
-{
-	if (callable && callable.__inc__ && callable.__fns__)
-		return callable;
+
+
+aze = new Aze();
+
+
+
+
+
+
+
+
+
+
+
+
+var EventDispatcher = new Class({
 	
-	var method = (typeof callable !== 'function')
-			? callable
-			: new this(module, name, callable);
+	// Tests
+	//[Bindable]
+	private_static_const: Bindable(function(msg)
+	{
+		alert(msg);
+	}),
 	
-	this.notify(method);
-	return method;
-};
-
-jx.core.Method.compile = function(method, environment)
-{
-	return method && method.compile
-		? method.compile(environment)
-		: method;
-};
-
-jx.core.Method.__listeners__ = [];
-
-jx.core.Method.added = function(block, context)
-{
-	this.__listeners__.push([block, context]);
-};
-
-jx.core.Method.notify = function(method)
-{
-	var listeners = this.__listeners__,
-		i = listeners.length,
-		listener;
+	_aze: "",
 	
-	while (i--)
+	aze: function(v)
 	{
-		listener = listeners[i];
-		listener[0].call(listener[1], method);
-	}
-};
-
-jx.core.Method._keywords = [];
-
-jx.core.Method.keyword = function(name, filter)
-{
-	this._keywords.push({name: name, filter: filter});
-};
-
-jx.core.Method.tracing = function(classes, block, context)
-{
-	jx.core.require('jx.core.StackTrace', function()
-	{
-		var logger = jx.core.StackTrace.logger,
-			active = logger.active;
-		
-		classes = [].concat(classes);
-		this.trace(classes);
-		logger.active = true;
-		block.call(context);
-		
-		this.untrace(classes);
-		logger.active = active;
-	}, this);
-};
-
-jx.core.Method.trace = function(classes)
-{
-	var i = classes.length;
-	while (i--)
-	{
-		classes[i].__trace__ = true;
-		classes[i].resolve();
-	}
-};
-
-jx.core.Method.untrace = function(classes)
-{
-	var i = classes.length;
-	while (i--)
-	{
-		classes[i].__trace__ = false;
-		classes[i].resolve();
-	}
-};
-
-
-jx.core.Module = jx.core.makeClass();
-jx.core.Module.__queue__ = [];
-
-jx.core.extend(jx.core.Module.prototype, {
-	initialize: function(name, methods, options)
-	{
-		if (typeof name !== 'string')
+		var _aze = this._aze;// To add with function refactory: read function.toString(), find each variable without 'this.' and add theses local references after 1st '{'
+		if(arguments.length != 0)
 		{
-			options = arguments[1];
-			methods = arguments[0];
-			name    = undefined;
-		}
-		options = options || {};
-		
-		this.__inc__ = [];
-		this.__dep__ = [];
-		this.__fns__ = {};
-		this.__tgt__ = options._target;
-		this.__anc__ = null;
-		this.__mct__ = {};
-		
-		this.setName(name);
-		this.include(methods, {_resolve: false});
-		
-		if (jx.core.Module.__queue__)
-			jx.core.Module.__queue__.push(this);
-	},
-	
-	setName: function(name)
-	{
-		this.displayName = name || '';
-		
-		for (var field in this.__fns__)
-			this.__name__(field);
-		
-		if (name && this.__meta__)
-			this.__meta__.setName(name + '.');
-	},
-	
-	__name__: function(name)
-	{
-		if (!this.displayName) return;
-		
-		var object = this.__fns__[name];
-		if (!object) return;
-		
-		name = this.displayName.replace(jx.core.END_WITHOUT_DOT, '$1#') + name;
-		if (typeof object.setName === 'function') return object.setName(name);
-		if (typeof object === 'function') object.displayName = name;
-	},
-	
-	define: function(name, callable, options)
-	{
-		var method  = jx.core.Method.create(this, name, callable),
-			resolve = (options || {})._resolve;
-		
-		this.__fns__[name] = method;
-		this.__name__(name);
-		if (resolve !== false) this.resolve();
-	},
-	
-	include: function(module, options)
-	{
-		if (!module) return this;
-		
-		var options = options || {},
-			resolve = options._resolve !== false,
-			extend  = module.extend,
-			include = module.include,
-			extended, field, value, mixins, i, n;
-		
-		if (module.__fns__ && module.__inc__)
-		{
-			this.__inc__.push(module);
-			if ((module.__dep__ || {}).push) module.__dep__.push(this);
-			
-			if (extended = options._extended)
-			{
-				if (typeof module.extended === 'function')
-					module.extended(extended);
-			}
-			else
-			{
-				if (typeof module.included === 'function')
-					module.included(this);
-			}
+			_aze = v;
 		}
 		else
 		{
-			if (this.shouldIgnore('extend', extend))
-			{
-				mixins = [].concat(extend);
-				for (i = 0, n = mixins.length; i < n; i++)
-					this.extend(mixins[i]);
-			}
-			if (this.shouldIgnore('include', include))
-			{
-				mixins = [].concat(include);
-				for (i = 0, n = mixins.length; i < n; i++)
-					this.include(mixins[i], {_resolve: false});
-			}
-			for (field in module)
-			{
-				if (!module.hasOwnProperty(field)) continue;
-				value = module[field];
-				if (this.shouldIgnore(field, value)) continue;
-				this.define(field, value, {_resolve: false});
-			}
-			if (module.hasOwnProperty('toString'))
-				this.define('toString', module.toString, {_resolve: false});
+			return _aze;
 		}
-		
-		if (resolve) this.resolve();
+		this._aze = _aze;// To add with function refactory: and add theses instance scope = local statements after last '}'
+	},
+	
+	// Real
+	
+	_listeners: {},
+	addEventListener: function(type, handler)
+	{
+		this._listeners[type] = this._listeners[type] || [];
+		this._listeners[type].push(handler);
 		return this;
 	},
 	
-	alias: function(aliases)
+	removeEventListener: function(type, handler)
 	{
-		for (var method in aliases)
-		{
-			if (!aliases.hasOwnProperty(method)) continue;
-			this.define(method, this.instanceMethod(aliases[method]), {_resolve: false});
-		}
-		this.resolve();
+		this._listeners[type] = this._listeners[type] || [];
+		this._listeners[type].push(handler);
+		return this;
 	},
-	
-	resolve: function(host)
-	{
-		var host   = host || this,
-			target = host.__tgt__,
-			inc    = this.__inc__,
-			fns    = this.__fns__,
-			i, n, key, compiled;
-		
-		if (host === this)
-		{
-			this.__anc__ = null;
-			this.__mct__ = {};
-			i = this.__dep__.length;
-			while (i--) this.__dep__[i].resolve();
-		}
-		
-		if (!target) return;
-		
-		for (i = 0, n = inc.length; i < n; i++)
-			inc[i].resolve(host);
-		
-		for (key in fns)
-		{
-			compiled = jx.core.Method.compile(fns[key], host);
-			if (target[key] !== compiled) target[key] = compiled;
-		}
-		if (fns.hasOwnProperty('toString'))
-			target.toString = jx.core.Method.compile(fns.toString, host);
-	},
-	
-	shouldIgnore: function(field, value)
-	{
-		return (field === 'extend' || field === 'include') &&
-				(typeof value !== 'function' ||
-				(value.__fns__ && value.__inc__));
-	},
-	
-	ancestors: function(list)
-	{
-		var cachable = !list,
-			list     = list || [],
-			inc      = this.__inc__;
-		
-		if (cachable && this.__anc__) return this.__anc__.slice();
-		
-		for (var i = 0, n = inc.length; i < n; i++)
-			inc[i].ancestors(list);
-		
-		if (jx.core.indexOf(list, this) < 0)
-			list.push(this);
-		
-		if (cachable) this.__anc__ = list.slice();
-		return list;
-	},
-	
-	lookup: function(name)
-	{
-		var cached = this.__mct__[name];
-		if (cached && cached.slice) return cached.slice();
-		
-		var ancestors = this.ancestors(),
-			methods   = [],
-			fns;
-		
-		for (var i = 0, n = ancestors.length; i < n; i++)
-		{
-			fns = ancestors[i].__fns__;
-			if (fns.hasOwnProperty(name)) methods.push(fns[name]);
-		}
-		this.__mct__[name] = methods.slice();
-		return methods;
-	},
-	
-	includes: function(module)
-	{
-		if (module === this) return true;
 
-		var inc  = this.__inc__;
-
-		for (var i = 0, n = inc.length; i < n; i++)
-		{
-			if (inc[i].includes(module))
-			return true;
-		}
-		return false;
-	},
-	
-	instanceMethod: function(name)
+	dispatchEvent: function(type)
 	{
-		return this.lookup(name).pop();
-	},
-	
-	instanceMethods: function(recursive, list)
-	{
-		var methods = list || [],
-			fns     = this.__fns__,
-			field;
+		if(this._listeners[type])
+			for(var i in this._listeners[type])
+				this._listeners[type][i]();
 		
-		for (field in fns)
-		{
-			if (!jx.core.isType(this.__fns__[field], jx.core.Method)) continue;
-			if (jx.core.indexOf(methods, field) >= 0) continue;
-			methods.push(field);
-		}
-		
-		if (recursive !== false)
-		{
-			var ancestors = this.ancestors(), i = ancestors.length;
-			while (i--) ancestors[i].instanceMethods(false, methods);
-		}
-		return methods;
-	},
-	
-	match: function(object)
-	{
-		return object && object.isA && object.isA(this);
-	},
-	
-	toString: function()
-	{
-		return this.displayName;
+		return this;
 	}
 });
 
+a = new EventDispatcher();
 
-jx.core.Kernel = new jx.core.Module('Kernel', {
-	__eigen__: function()
-	{
-		if (this.__meta__) return this.__meta__;
-		var name = this.toString() + '.';
-		this.__meta__ = new jx.core.Module(name, null, {_target: this});
-		return this.__meta__.include(this.klass, {_resolve: false});
-	},
-	
-	equals: function(other)
-	{
-		return this === other;
-	},
-	
-	extend: function(module, options)
-	{
-		var resolve = (options || {})._resolve;
-		this.__eigen__().include(module, {_extended: this, _resolve: resolve});
-		return this;
-	},
-	
-	hash: function()
-	{
-		return jx.core.Kernel.hashFor(this);
-	},
-	
-	is: function(module)
-	{
-		return (typeof module === 'function' && this instanceof module) ||
-		this.__eigen__().includes(module);
-	},
-	
-	method: function(name)
-	{
-		var cache = this.__mct__ = this.__mct__ || {},
-		value = cache[name],
-		field = this[name];
+a2 = new EventDispatcher();
 
-		if (typeof field !== 'function') return field;
-		if (value && field === value._value) return value._bound;
+//a.addEventListener('load', function(){ console.log('loaded a '); });
+//a.dispatchEvent('load');
+//a2.addEventListener('load', function(){ console.log('loaded a2'); });
+//a2.dispatchEvent('load');
 
-		var bound = jx.core.bind(field, this);
-		cache[name] = {_value: field, _bound: bound};
-		return bound;
-	},
-	
-	methods: function()
+
+
+
+
+
+
+
+var Loader = new Class(EventDispatcher,{
+	addEventListener: function(type, handler)
 	{
-		return this.__eigen__().instanceMethods();
+		//console.log(this.super, this.super.listeners);
+		console.log( this.super.addEventListener(type, handler));
 	},
+	private_qsd2: 'Mon2!!',
 	
-	tap: function(block, context)
+	aze2: function()
 	{
-		block.call(context || null, this);
-		return this;
+		return this._qsd2;
 	},
-	
-	toString: function()
-	{
-		if (this.displayName) return this.displayName;
-		var name = this.klass.displayName || this.klass.toString();
-		return '#<' + name + ':' + this.hash() + '>';
-	}
+	qsd2: '222222222222222222!!!'
 });
 
-(function()
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+idea: compiler
+
+
+
+var pattern = {
+	
+	'scope':	[	/private var/g , 								"var"	],
+	'en1':		[	/aze/g , 										"EN"	],
+	'en2':		[	/qwe/g , 										"aze"	],
+	'en3':		[	/EN/g ,											"qwe"	],
+	'alert':	[	/(mx\.controls\.)*Alert\.show/g , 				"alert"	],
+	'type':		[	/(.*):([a-zA-Z0-9_-]*)\s*=\s*([^;]*)/g , 		"$1 = $2($3)"	]
+	
+};
+
+p = /^package\s*([a-z-A-Z0-9.-]*)\s*((.|\s)*)$/mg;
+console.log(p.exec('package mx.core {\n\n	private var		coucou:Number = 46661;\n\n}'));
+
+
+function compile(sCode)
 {
-	var id = 1;
+	for(var i in pattern)
+		sCode = sCode.replace(pattern[i][0], pattern[i][1]);
 	
-	jx.core.Kernel.hashFor = function(object)
-	{
-		if (object.__hash__ !== undefined) return object.__hash__;
-		object.__hash__ = (new Date().getTime() + id).toString(16);
-		id += 1;
-		return object.__hash__;
-	};
-})();
+	eval("var o = " + sCode);
+	return o;
+}
 
 
-jx.core.Class = jx.core.makeClass(jx.core.Module);
 
-jx.core.extend(jx.core.Class.prototype, {
-	initialize: function(name, parent, methods, options)
-	{
-		if (typeof name !== 'string')
-		{
-			options = arguments[2];
-			methods = arguments[1];
-			parent  = arguments[0];
-			name    = undefined;
-		}
-		if (typeof parent !== 'function')
-		{
-			options = methods;
-			methods = parent;
-			parent  = Object;
-		}
-		jx.core.Module.prototype.initialize.call(this, name);
-		options = options || {};
-		
-		var klass = jx.core.makeClass(parent);
-		jx.core.extend(klass, this);
-		
-		klass.prototype.constructor = klass.prototype.klass = klass;
-		
-		klass.__eigen__().include(parent.__meta__, {_resolve: options._resolve});
-		klass.setName(name);
-		
-		klass.__tgt__ = klass.prototype;
-		
-		var parentModule = (parent === Object)
-							? {}
-							: (parent.__fns__ ? parent : new jx.core.Module(parent.prototype, {_resolve: false}));
-		
-		klass.include(jx.core.Kernel, {_resolve: false})
-					.include(parentModule, {_resolve: false})
-					.include(methods,      {_resolve: false});
-		
-		if (options._resolve !== false) klass.resolve();
-		
-		if (typeof parent.inherited === 'function')
-			parent.inherited(klass);
-		
-		return klass;
-	}
-});
+
+
+
+var as3 = '	function(msg)' +
+		'	{' +
+		'		private var aze:String = "qwe";' +
+		'		//Alert.show(aze,msg);\n' +
+		'		//mx.controls.Alert.show("coucou");\n' +
+		'	}';
+
+as3 = compile(as3);
+
+as3('jfkdOlloLo');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Idea override native appendChild :
+
+
+var nativeAppendChild = Element.prototype.appendChild;
+Element.prototype.appendChild = function()
+{
+	nativeAppendChild.apply(this, arguments);
+	arguments[0].innerHTML = "factoried";
+	console.log(arguments[0], ' append !');
+}
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* DOM EventDispatcher
 
 
 (function()
 {
-	var methodsFromPrototype = function(klass)
+	var old = Element.prototype.setAttribute;
+	Element.prototype.setAttribute = function()
 	{
-		var methods = {},
-		proto   = klass.prototype;
-		
-		for (var field in proto)
-		{
-			if (!proto.hasOwnProperty(field)) continue;
-			methods[field] = jx.core.Method.create(klass, field, proto[field]);
-		}
-		return methods;
+		var res = old.apply(this, arguments);
+		console.log("[DOMEvent attributeAdded]", this.getAttribute(arguments[0]));
+		return res;
 	};
-	
-	var classify = function(name, parentName)
-	{
-		var klass  = jx.core[name],
-		parent = jx.core[parentName];
-		
-		klass.__inc__ = [];
-		klass.__dep__ = [];
-		klass.__fns__ = methodsFromPrototype(klass);
-		klass.__tgt__ = klass.prototype;
-		
-		klass.prototype.constructor =
-		klass.prototype.klass = klass;
-		
-		jx.core.extend(klass, jx.core.Class.prototype);
-		klass.include(parent || jx.core.Kernel);
-		klass.setName(name);
-		
-		klass.constructor = klass.klass = jx.core.Class;
-	};
-	
-	classify('Method');
-	classify('Module');
-	classify('Class', 'Module');
-	
-	var eigen = jx.core.Kernel.instanceMethod('__eigen__');
-	
-	eigen.call(jx.core.Method);
-	eigen.call(jx.core.Module);
-	eigen.call(jx.core.Class).include(jx.core.Module.__meta__);
+
+
+
 })();
 
-jx.core.NotImplementedError = new jx.core.Class('NotImplementedError', Error);
 
-
-jx.core.Method.keyword('callSuper', function(method, env, receiver, args)
-{
-	var methods    = env.lookup(method.name),
-		stackIndex = methods.length - 1,
-		params     = jx.core.array(args);
-
-	return function()
-	{
-		var i = arguments.length;
-		while (i--) params[i] = arguments[i];
-		
-		stackIndex -= 1;
-		var returnValue = methods[stackIndex].apply(receiver, params);
-		stackIndex += 1;
-		
-		return returnValue;
-	};
-});
-
-jx.core.Method.keyword('blockGiven', function(method, env, receiver, args)
-{
-	var block = Array.prototype.slice.call(args, method.arity),
-		hasBlock = (typeof block[0] === 'function');
-	
-	return function() { return hasBlock };
-});
-
-jx.core.Method.keyword('yieldWith', function(method, env, receiver, args)
-{
-	var block = Array.prototype.slice.call(args, method.arity);
-	
-	return function()
-	{
-		if (typeof block[0] !== 'function') return;
-		return block[0].apply(block[1] || null, arguments);
-	};
-});
-
-
-jx.core.Interface = new jx.core.Class('Interface', {
-	initialize: function(methods)
-	{
-		this.test = function(object, returnName)
-		{
-			var n = methods.length;
-			while (n--)
-			{
-				if (typeof object[methods[n]] !== 'function')
-					return returnName ? methods[n] : false;
-			}
-			return true;
-		};
-	},
-	
-	extend: {
-		ensure: function()
-		{
-			var args = jx.core.array(arguments), object = args.shift(), face, result;
-			while (face = args.shift())
-			{
-				result = face.test(object, true);
-				if (result !== true) throw new Error('object does not implement ' + result + '()');
-			}
-		}
-	}
-});
-
-
-jx.core.Singleton = new jx.core.Class('Singleton', {
-	initialize: function(name, parent, methods)
-	{
-		return new (new jx.core.Class(name, parent, methods));
-	}
-});
+*/
 
 
 
@@ -898,63 +706,6 @@ jx.core.Singleton = new jx.core.Class('Singleton', {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var EventHandler = jx.core.bind;
-
-
-var Class = jx.core.Class;
-
-
-
-
-var Coucou = new Class({ extends: [],
-	constructor: function()
-	{
-		console.log(this, this.maProp);
-
-	},
-	maProp: 42,
-	method: function()
-	{
-	
-	},
-	event: EventHandler(function(event)
-	{
-	
-	}),
-	"get width": function(value)
-	{
-	
-	}
-});
-
-aze = new Coucou();
 
 
 
