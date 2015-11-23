@@ -1,0 +1,10 @@
+{
+	"core": {
+		"Button": "mx/core/Button.js",
+		"Loader": "mx/core/Loader.js"
+	},
+	"component": {
+		"Datagrid": "mx/component/Datagrid.js",
+		"TabView": "another/path/TabView-v3.js"
+	}
+}

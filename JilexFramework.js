@@ -1,5 +1,5 @@
 /**
- * <j:Lex/>: Flex-style JavaScript, HTML 6
+ * <j:Lex/>: Flex-style JavaScript, XHTML 2.0
  * http://jilex.devingfx.com
  * Copyright (c) 2012-2013 Thomas DI GREGORIO and contributors
  * 

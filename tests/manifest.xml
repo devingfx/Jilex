@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<componentPackage>
+    <component id="Button"		class="mx.controls.Button"		url=""/>
+    <component id="Coverflow"	class="mx.controls.Coverflow"	url=""/>
+</componentPackage>

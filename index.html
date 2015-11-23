@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" xmlns:jx="http://ns.devingfx.com/jxml/2012">	
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Jilex Framework v0.3</title>
+		<link rel="stylesheet" type="text/stylesheet" src=""/>
+	</head>
+	<body>
+		
+		<script type="text/javascript">
+			
+		</script>
+		
+		<button>cocuouc</button>
+		Coucou monde!<a onClick="console.log(document)" style="box-shadow: 0px 2px 40px #000000;">qfsdfsdf</a>
+		
+		
+		<jx:Coverflow id="myCover" folder="./img" alpha="0" onLoaded="myCover.alpha(1);">
+			<mx:Button label="X" onClick="myCover.visible = false;"></mx:Button>
+			<!--<img src="pic1.jpg"/>
+			<img src="pic2.jpg"/>
+			<img src="pic3.jpg"/>
+			<img src="pic4.jpg"/>
+			<img src="pic5.jpg"/>-->
+			<mx:HorizontalBox width="100%" height="{myCover.height()/3}" label="Coucou de {myCover.width()} pixels!">
+				<mx:Button label="PREV" onClick="myCover.selectedIndex--;"></mx:Button>
+				<mx:Button label="NEXT" onClick="myCover.selectedIndex++;"></mx:Button>
+			</mx:HorizontalBox>
+		</jx:Coverflow>
+		
+		window['myCover'] = new Coverflow(tagHTML);
+		
+		
+		<local:Application state.width="200" state2.width="500" heigth="50" dataProvider="{data}">
+			<mx:component>
+				<mx:Button/>
+			</mx:component>
+		</local:Application>
+		
+		<jx:states>
+			<jx:State name="State1"/>
+			<jx:State name="aze"/>
+		</jx:states>
+		
+		<mx:img src="Google.com"></mx:img>
+		
+		<fx:Declarations>
+			<!-- Placer ici les éléments non visuels (services et objets de valeur, par exemple). -->
+			
+			<cs:PoiManager id="pm"></cs:PoiManager>
+		</fx:Declarations>
+		
+		
+		<jx:Button id="myButton" bottom="50" width="80%" height="88" label="Bouton" horizontalCenter="0" bottom.aze="50" height.aze="840" horizontalCenter.aze="0" click="currentState=='aze'?'State1':'aze';"></jx:Button>
+
+
+		<enyo:Button xmlns:enyo="http://www.webos.com/"></enyo:Button>
+
+		
+		<!--script type="text/javascript">JSCLASS_PATH = "./jilex/poo/";</script>
+		<script type="text/javascript" src="jilex/poo/loader-browser.js"></script-->
+		
+		
+		
+		
+		<script id="JilexFramework" 
+				type="text/javascript" src="./JilexFramework.js" 
+					xmlns:local	="." 
+					xmlns:jx	="jilex" 
+					xmlns:dist	="http://localhost/jilex/" 
+					xmlns:jq	="jquery">
+					<jx:Namespace id="jx" source="jilex"/>
+		</script>
+		
+		
+		<jq:JQuery id="$"></jq:JQuery>
+
+		
+	</body>
+</html>
