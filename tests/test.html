@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript">
+
+		(function()
+		{
+			
+			function all(tag, parent)
+			{
+				return function()
+						{
+							var a = [];
+							for (var y = 0; y < parent.length; y++)
+								for (var z = 0; z < parent[y].childNodes.length; z++)
+									if(parent[y].childNodes[z].nodeType == 1 && parent[y].childNodes[z].tagName.toLowerCase() == tag)
+										a.push(parent[y].childNodes[z]);
+							
+							// console.log(tag, parent ,a);
+							return new E4XList(a);
+						};
+			}
+
+			E4XList = function(els)
+			{
+				this.__defineSetter__('source', function(v)
+				{
+					for (var i = 0; i < v.length; i++)
+						this.push(v[i]);
+
+					this._parse();
+				});
+				
+				if(els && Object.prototype.toString.call(els) != "[object Array]")
+					els = [els];
+				if(els)
+					this.source = els;
+			}
+			E4XList.prototype = new Array;
+			
+			E4XList.prototype._tagToProp = function(tag)
+			{
+				tag = tag.toLowerCase();
+				if(tag.indexOf('-') != -1)
+				{
+					var words = tag.split('-');
+					for(var w = 1; w < words.length; w++)
+						words[w] = words[w].substring(1,0).toUpperCase() + words[w].substr(1);
+					tag = words.join('');
+				}
+				return tag;
+			}
+
+			E4XList.prototype._bindTagName = function(tag)
+			{
+				var self = this;
+				return function()
+						{
+							var a = [];
+							for (var y = 0; y < self.length; y++)
+								for (var z = 0; z < self[y].childNodes.length; z++)
+									if(self[y].childNodes[z].nodeType == 1 && self[y].childNodes[z].tagName.toLowerCase() == tag)
+										a.push(self[y].childNodes[z]);
+							
+							// console.log(tag, self ,a);
+							return new E4XList(a);
+						};
+			}
+
+			E4XList.prototype._parse = function()
+			{
+				for(var j = 0; j < this.length; j++)
+				{
+					for(var i = 0; i < this[j].childNodes.length; i++)
+					{
+						var el = this[j].childNodes[i];
+						if(el.nodeType == 1)
+						{
+							var tag = this._tagToProp(el.tagName);
+							if(typeof this.__lookupGetter__(tag) == "undefined")
+							{
+								console.log(tag);
+								this.__defineGetter__(tag, this._bindTagName(tag));
+							}
+							if(el.getAttribute('id') != "" && typeof window[el.getAttribute('id')] == "undefined")
+								window[el.getAttribute('id')] = new E4XList(el);
+						}
+					}
+				}
+				/*
+				for(i in this._source)
+				{
+					// console.log(i);
+					this.__defineGetter__(i, (function(o){
+														return function()
+																{
+																	return o;
+																};
+													})(this._source[i])
+											);
+				}
+				*/
+			};
+
+			E4XList.prototype.toXMLString = function(el)
+			{
+				var res = "[";
+				for (var i = 0; i < this.length; i++) {
+					res += toXMLString(this[i]);
+				};
+				return res + "]";
+
+				var att = "";
+				for (var i = 0, l = el.attributes.length - 1; i < l; i--)
+					att += " "+el.attributes[i].name+"=\""+el.attributes[i].value+"\"";
+				return "&lt;"+el.tagName+att+"&gt;"
+			}
+
+			window.E4XList = E4XList;
+		})();
+
+		function log(str){debug.innerHTML+=str+"<br/>"}
+
+		var body = new E4XList(document.body);
+
+
+		</script>
+			<style type="text/css">
+			/* default */
+			vertical-gap {content: '0px';}
+
+			/* on tag */
+			CustomTag {
+				width: 354px;
+				height: 110px;
+			}
+			CustomTag vertical-gap {content: '10px';}
+
+			/* on class */
+			CustomTag.foo {
+				width: 354px;
+				height: 110px;
+			}
+			CustomTag.foo vertical-gap {content: '100px';}
+		</style>
+	</head>
+	<body>
+		
+		coucou
+		
+		<div style="background:red;">sldifjskldf</div>
+
+		<div style="background:green;">
+			<div id="test">
+				<h1>Titre !!</h1>
+			</div>
+			<h2>h2 O !!</h1>
+		</div>
+		
+		<div style="background:blue;">
+			<h1>Titre 2 !!</h1>
+			<h2>h2 !!</h1>
+		</div>
+		
+		<CustomTag>
+			<vertical-gap></vertical-gap>
+		</CustomTag>
+		<CustomTag class="foo">
+			<vertical-gap></vertical-gap>
+		</CustomTag>
+
+
+
+		<script type="text/javascript">
+		
+
+		var body = new E4XList(document.body);
+		
+		//body.div.h1
+
+		</script>
+	</body>
+</html>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UiComponent xmlns:mx="adobe.truc.mush.com/mlxm">
+	<mx:Button label="Coucou!" width="100%"/>
+</UiComponent>
