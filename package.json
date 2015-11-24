@@ -1,6 +1,6 @@
 {
   "name": "jilex",
-  "version": "0.5.0",
+  "version": "0.3.0",
   "description": "Jilex is a framework to make Flex style webapps (RIA) in javascript.",
   "main": "index.js",
   "directories": {
@@ -19,6 +19,5 @@
     "xml",
     "MVC"
   ],
-  "author": "Di Grégorio Thomas",
-  "license": "ISC"
+  "author": "Di Grégorio Thomas"
 }
