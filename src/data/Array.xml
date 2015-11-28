@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<jx:Element xmlns:jx="http://www.devingfx.com/2015/jxml"
+	xmlns="http://www.w3.org/1999/xhtml">
+	<style>
+		@namespace data url(data.*)
+		data|* {
+			display: none;
+		}
+	</style>
+	<script type="text/javascript">
+		<!--debugger;-->
+		Package('data.*');
+		data.Array = Array;
+	</script>
+	
+</jx:Element>

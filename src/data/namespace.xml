@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<jx:Namespace xmlns:jx="http://www.devingfx.com/2015/jxml" 
+			  xmlns="http://www.w3.org/1999/xhtml">
+	
+	<jx:Component id="Boolean"	class="js.Boolean" />
+	<jx:Component id="Number"	class="js.Number" />
+	<jx:Component id="String"	class="js.String" />
+	<jx:Component id="Array"	class="js.Array" />
+	<jx:Component id="Object"	class="js.Object" />
+	
+	<jx:Component id="Collection"			class="js.Collection" />
+	<jx:Component id="ArrayCollection"		class="js.ArrayCollection" />
+	<jx:Component id="XMLListCollection"	class="js.XMLListCollection" />
+	
+	<script type="text/javascript">
+		var js = document.documentElement.xmlns.js;
+		js.Boolean = Boolean;
+		js.Number = Number;
+		Number.prototype.toValue = function()
+		{
+			if( this instanceof Element )
+				return this.Class( this.innerHTML )
+			else
+				return this.valueOf()
+		}
+		js.String = String;
+		js.Array = Array;
+		js.Object = Object;
+	</script>
+	
+	<style>
+		@namespace js url(data.*);
+		
+		js|Boolean,
+		js|Number,
+		js|String,
+		js|Array,
+		js|Object,
+		js|XML,
+		js|RegExp,
+		js|json
+		{display: none;}
+	</style>
+	
+</jx:Namespace>

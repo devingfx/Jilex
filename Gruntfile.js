@@ -18,13 +18,28 @@ module.exports = function(grunt) {
 					'src/jx/jilex.js',
 				],
 				dest: 'dist/jilex.src.js',
-			}
+			},
+			jilex5: {
+				src: [
+					'src/jx/util/Array.create.js',
+					'src/jx/Node.js',
+					'src/jx/Document.js',
+					'src/jx/Namespace.js',
+					'src/jx/NamespaceList.js',
+					'src/jx/Component.js',
+					'src/jx/ns.js',
+					'src/jx/namespace.polyfill.js',
+					'src/jx/jilex.js',
+				],
+				dest: 'dist/jilex5.src.js',
+			},
 		},
 		
 		uglify: {
 			jilex: {
 				files: {
-					'dist/jilex.js': ['dist/jilex.src.js']
+					'dist/jilex.XHTML.js': ['dist/jilex.src.js'],
+					'dist/jilex.HTML5.js': ['dist/jilex5.src.js']
 				}
 			}
 		}

@@ -1,0 +1,4 @@
+<script xmlns="http://www.w3.org/1999/xhtml" type="text/javascript">
+	var js = document.documentElement.xmlns.js;
+	js.Object = Object;
+</script>
