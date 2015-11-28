@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Namespace xmlns="http://ns.devingfx.com/jxml/2015">
+<!--<componentPackage>-->
+	
+	<Component id="Demo"	class="Demo"		url="Demo.xml" />
+	
+<!--</componentPackage>-->
+</Namespace>

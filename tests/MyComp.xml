@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<div xmlns:jx="http://www.devingfx.com/2015/jxml"
+	 xmlns:js="data.*"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:local="*"
+	width="200px" height="100px">
+	
+	<jx:Script><![CDATA[
+		
+		initialize()
+		{
+			this._text = "";
+		}
+		
+		get text()
+		{
+			return _text;
+		}
+		set text( v )
+		{
+			this._text = v;
+		}
+		
+			
+	]]></jx:Script>
+	
+	<js:String id="text">Coucou</js:String>
+	
+	<h1>{text} monde !</h1>
+
+</div>
