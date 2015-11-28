@@ -1,34 +1,63 @@
-package('jx.core', 
-		[],
-function()
-{
-	/**
-	 * Component class
-	 */
-	this.Component = new Class(
+"use strict";
+
+Package('jx.*');
+
+jx.Component = class jxComponent {
+	constructor()
 	{
-		__className:		"jx.core.Component",
-		__constructor:		function(node)
-							{
-								this.element = node;
-								this.$el = $(node);
-								
-								console.log('Component.__constructor', this.__className, this.$el);
-								this.createChildren();
-								this.updateDisplayList();
-							},
-							
-		element:			null,
-		childrenCreated: 	false,
-		createChildren:		function()
-							{
-								console.log('Component.createChildren', this.$el);
-								this.childrenCreated = true;
-							},
-		updateDisplayList:	function()
-							{
-								console.log('Component.updateDisplayList', this.$el);
-							}
-	});
-	// package.loaderCallback("jx.core.Component");
-});
+	    Object.defineProperty( this, 'url', { 
+	    	get:  function()
+	    	{
+	    		return this.attributes.url && this.attributes.url.value || 
+	    				this.attributes.class && this.attributes.class.value.replace(/\./g, '/');
+	    	}
+	    });
+		
+	}
+	
+	apply( o, args )
+	{
+		console.log( 'apply', this.children.length );
+		var _this = this;
+		function applyComponent( e )
+		{
+			[].new( _this.children )
+				.map(function( child )
+				{
+					o.appendChild( child );
+				})
+		}
+		if( !this.children.length )
+		{
+			this.addEventListener('componentLoaded', applyComponent);
+			this.load();
+		}
+		else
+			applyComponent();
+	}
+	
+	load()
+	{
+		var _this = this;
+		// TODO: check file extension (.js .html) and change parsing method
+		$.get( this.parentElement.url + this.url )
+		.then(function( xml )
+		{
+			_this.appendChild( xml.documentElement.cloneNode(true) );
+			_this.dispatchEvent(new Event('componentLoaded'));
+		})
+		.fail(function()
+		{
+			console.log(arguments)
+		});
+	}
+}
+
+    
+
+/* INFOS:
+*/
+
+/* TESTS:
+
+*/
