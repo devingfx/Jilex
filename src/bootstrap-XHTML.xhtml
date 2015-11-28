@@ -60,45 +60,52 @@
 		<script src="./bower_components/jquery/dist/jquery.min.js"></script>
 		
 		
-		<script src="./jx/ObjectProxy.js"></script>
-		<script src="./jx/Class.js"></script>
-		<script src="./jx/ObjectProxy.js"></script>
+		<script src="./jx/util/Array.create.js"></script>
 		
-		<script src="./jx/Node.load.js" implementStyles="true" useShadowDOM="true"></script>
+		<script src="./jx/Package.js"></script>
+		<script src="./jx/package.js"></script>
+		<script src="./html/package.js"></script>
 		
 		
-		<script>
-			// document.namespaces.k.Demo = function Demo()
-			// document.namespaces.local[0].Demo = function Demo()
-			// {
-			// 	var node = this;
-			// 	$.get('Demo.xml', {type:'xml'})
-			// 		.done(function( xml )
-			// 		{
-			// 			window.xml = xml;
-			// 			var $head = $('head', xml);
-			// 			window.$headers = $head.children().remove();
-			// 			$head.remove();
-			// 			node.appendChild( xml.documentElement.cloneNode(true) ); 
-			// 			$headers
-			// 				.filter(function(){return this.localName != "script"})
-			// 				.each( function(){$('head').append(this)} );
-			// 			var $scripts = $headers.filter('script')
-			// 				.each( function(){$('head').append(this)} );
-			// 		})
-			// 		.fail(function( xml )
-			// 		{
-			// 			window.xml = xml;
-			// 			console.log(
-			// 				(new DOMParser)
-			// 					.parseFromString(xml.responseText, "text/xml")
-			// 						.querySelectorAll('parsererror div')
-			// 			);
-			// 		})
-				
-			// }
-			
+		<script src="./jx/core/EventDispatcher.js"></script>
+		<script src="./jx/core/Loadable.js"></script>
+		<script src="./jx/core/Node.js"></script>
+		<script src="./jx/core/Document.js"></script>
+		<script src="./jx/core/Attr.js"></script>
+		<script src="./jx/core/XmlnsAttr.js"></script>
+		<script src="./jx/core/Element.js"></script>
+		<script src="./jx/core/Namespace.js"></script>
+		<script src="./jx/core/Component.js"></script>
+		
+		<script src="./jx/core/Jilex.js" 
+				debug="true" 
+				loadHttpNs="false"
+				recreateQNodes="false"
+				implementStyles="true" 
+				useShadowDOM="true"
+				extendHTMLElements="true">
 		</script>
+		
+		<!-- E4X experiment: needs to be last -->
+		<!--<script src="./jx/core/E4X.js"></script>-->
+		
+		<!--<script src="../dist/AppKit.js"></script>-->
+		<!--<script src="./jx/ObjectProxy.js"></script>-->
+		<!--<script src="./jx/Class.js"></script>-->
+		<!--<script src="./jx/ObjectProxy.js"></script>-->
+		
+		
+		<!--<script src="./jx/Node.load.js" implementStyles="true" useShadowDOM="true"></script>-->
+		
+		<!--<script src="./jx/Array.new.js"></script>-->
+		<!--<script src="./jx/Node.js"></script>-->
+		<!--<script src="./jx/NamespaceList.js"></script>-->
+		<!--<script src="./jx/Document.js"></script>-->
+		<!--<script src="./jx/Namespace.js" loadHttpNs="false"></script>-->
+		<!--<script src="./jx/Component.js"></script>-->
+		<!--<script src="./jx/ns.js" recreateQNodes="false"></script>-->
+		<!--<script src="./jx/jilex.js" useShadowDOM="false" implementStyles="true"></script>-->
+		
 		
 	</head>
 	
