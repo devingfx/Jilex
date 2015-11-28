@@ -6,7 +6,10 @@ differents doctypes:
 - http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd
 - http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd
 - html (ak html5)
-with differents file extenssions:
+with differents content type:
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+with differents file extensions:
 - html
 - xhtml
 - xml
