@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:jx="http://ns.devingfx.com/jxml/2015"
+	  xmlns:es6="http://www.ecma-international.org/ecma-262/6.0/"
+	  xmlns:js="data.*"
+	  xmlns:model="data.models.*"
+	  xmlns:gfx="themes.*"
+	  xmlns:jq="jquery.cdn"
+	  xmlns:my="/myComponents/"
+	  xmlns:local="*"
+	  xmlns:localPack="./severalClassesPackage.xml">
+	
+	<!-- ChromeOS util: opening from Files app reloads the page but with http://localhost -->
+	<script src="../../../../launch-app.js" path="dev/Jilex Framework/src/bootstrap-XHTML.xml"></script>
+	
+	<head>
+		<title>loading ...</title>
+		<meta charset="utf-8"/>
+		<!--<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>-->
+		<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+		
+		
+		<style>
+        	@namespace url(http://www.w3.org/1999/xhtml);
+			@namespace jx url(http://ns.devingfx.com/jxml/2015);
+        	@namespace js url(data.*);
+        	@namespace ak url(js.AppKit);
+        	@namespace local url(*);
+			
+			html, body {
+				background: transparent;
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			
+			jx|Button {
+				display: inline-block;
+				background: #8A2BE2;
+				padding: 5px 10px;
+				color: #FFF;
+				font-family: sans-serif;
+				border-radius: 4px;
+				box-shadow: 0 2px 7px #8A2BE2;
+				text-shadow: 0 1px 0 black;
+			}
+			jx|Button:before {
+				content: attr(label);
+			}
+			
+			/*local|Button,*/
+			js|* { display: none; }
+		</style>
+		
+		
+		<!--TODO: get rid of jquery dependency -->
+		<script src="./bower_components/jquery/dist/jquery.min.js"></script>
+		
+		
+		<script src="./jx/ObjectProxy.js"></script>
+		<script src="./jx/Class.js"></script>
+		<script src="./jx/ObjectProxy.js"></script>
+		
+		<script src="./jx/Node.load.js" implementStyles="true" useShadowDOM="true"></script>
+		
+		
+		<script>
+			// document.namespaces.k.Demo = function Demo()
+			// document.namespaces.local[0].Demo = function Demo()
+			// {
+			// 	var node = this;
+			// 	$.get('Demo.xml', {type:'xml'})
+			// 		.done(function( xml )
+			// 		{
+			// 			window.xml = xml;
+			// 			var $head = $('head', xml);
+			// 			window.$headers = $head.children().remove();
+			// 			$head.remove();
+			// 			node.appendChild( xml.documentElement.cloneNode(true) ); 
+			// 			$headers
+			// 				.filter(function(){return this.localName != "script"})
+			// 				.each( function(){$('head').append(this)} );
+			// 			var $scripts = $headers.filter('script')
+			// 				.each( function(){$('head').append(this)} );
+			// 		})
+			// 		.fail(function( xml )
+			// 		{
+			// 			window.xml = xml;
+			// 			console.log(
+			// 				(new DOMParser)
+			// 					.parseFromString(xml.responseText, "text/xml")
+			// 						.querySelectorAll('parsererror div')
+			// 			);
+			// 		})
+				
+			// }
+			
+		</script>
+		
+	</head>
+	
+	<!-- Namespace manifests can be included in the page -->
+	<jx:Namespace uri="http://ns.devingfx.com/jxml/2015">
+		<jx:Component id="Namespace"	class="jx.Namespace"></jx:Component>
+		<jx:Component id="Component"	class="jx.Component"></jx:Component>
+	</jx:Namespace>
+	
+	<jx:Namespace uri="*">
+		<jx:Component id="Demo"			url="Demo.xml"></jx:Component>
+	</jx:Namespace>
+	
+	<body debug="true">
+		
+		<local:MyComp text="Coucou"/>
+		<local:MySuperComp/>
+		
+		<gfx:ThemeChooser id="themesMenu" class="close" side="right" jx:id="coucou"
+						  style="color: red"/>
+		
+		
+		
+		<local:Button>Coucou</local:Button>
+
+		
+		<js:Array id="myData">
+			<js:String>Coucou</js:String>
+			<js:String>Monde</js:String>
+			<js:Number>42</js:Number>
+			<js:Boolean>false</js:Boolean>
+			<js:Object>
+				<js:String key="title">Coucou</js:String>
+				<js:Number key="count">42</js:Number>
+				<js:Boolean key="doAnything">false</js:Boolean>
+			</js:Object>
+			<js:json>{"go": { "ahead": "with", "your": "plain", "json": true} }</js:json>
+			<js:RegExp modifier="g">(.*?)@(.*?).(.*?)</js:RegExp>
+		</js:Array>
+		
+		<js:XML source="./datas/catalog.xml"></js:XML>
+		
+		<Div/>
+		<Input/>
+		<Element/>
+		<jx:Element/>
+		
+		<Demo xmlns="*"></Demo>
+		
+		<jx:Carousel/>
+		<jx:Editor/>
+		
+		<Editor xmlns="http://ns.devingfx.com/jxml/2015">
+			<Button label="Editor"/>
+			<jx:TextInput value="monde"/>
+		</Editor>
+		
+		<script type="text/js">
+			document.addEventListener('DOMContentLoaded', function()
+			{
+			    window.demo = document.querySelector('Demo');
+			    demo.addEventListener('created', function()
+			    {
+			    	// demo.appendChild( demo.namespace.Demo.documentElement.cloneNode(true))
+			    	window.html = rootsMan( demo );
+			    	
+			    })
+			    demo.load()
+			});
+		</script>
+	</body>
+</html>
