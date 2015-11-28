@@ -1,0 +1,32 @@
+{
+  "name": "jilex",
+  "description": "Jilex is a framework to make Flex style webapps (RIA) in javascript.",
+  "main": "index.js",
+  "authors": [
+    "Di Grégorio Thomas"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "adobe",
+    "apache",
+    "flex",
+    "xhtml2",
+    "js",
+    "javascript",
+    "xml",
+    "MVC"
+  ],
+  "moduleType": [],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4"
+  }
+}
