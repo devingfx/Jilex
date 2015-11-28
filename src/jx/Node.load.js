@@ -1089,9 +1089,9 @@ Object.getOwnPropertyNames( window )
 // html.Node = Node;
 // html.Element = Element;
 
-class EventTarget {
+// class EventTarget {
 	
-}
+// }
 // class Node extends EventTarget {
 	
 // }
@@ -1166,7 +1166,7 @@ jx.core.Node.prototype = {
 			uri = document.documentElement.lookupNamespaceURI(prefix);
 		}
 	    return document.createElementNS( uri || 'http://www.w3.org/1999/xhtml', nodeName );
-		}
+		
 	}
 }
 

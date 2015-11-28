@@ -1,8 +1,9 @@
-
-
+"use strict";
 (function(){
+
+
 	
-	var A = [].create;
+	var A = Array.from;
 	
 	QUnit.test( "Classes presence", function( assert )
 	{
@@ -59,98 +60,170 @@
 	
 	QUnit.test( "Node parsing", function( assert )
 	{
-		document.body.children.should.have.lengthOf( 15 );
+		var ok = ( s, t ) => assert.ok( t, s );
+		
+		// document.body.children.should.have.lengthOf( 15 );
 		
 		var customElements = A( document.body.children )
 								.filter( (node, i, a) => i < a.length-5 );
 		
-		customElements
-			.every( node => node.should.be.an.instanceOf(Natives.Element)
-								.and.not.be.an.instanceOf(html.Element)				)
 		
-		assert.ok(1, 'Elements are not HTMLElement');
+		ok( 'Elements are Element',// not HTMLUnknownElement',
+			customElements
+				.every( node => node.should.be.an.instanceOf( Element )
+									// .and.not.be.an.instanceOf( html.Unknown )
+						)
+		);
 		
-		// var ThemeChooser = customElements[0];
-		customElements[0].should.have.properties({ 
-												namespaceURI: 'themes.*',
-												prefix: 'gfx',
-												localName: 'ThemeChooser'
+		
+		ok('<local:MyComp> is correctly parsed',
+			
+			customElements[0].should.have.properties({ 
+												namespaceURI: '*',
+												prefix: 'local',
+												localName: 'MyComp',
+												url: './MyComp.xml'
 											})
 		
-		assert.ok(1, '<gfx:ThemeChooser> is in correctly parsed');
+		);
 		
-		customElements[1].should.have.properties({ 
+		
+		ok('<local:MySuperComp> is correctly parsed',
+			
+			customElements[1].should.have.properties({ 
+												namespaceURI: '*',
+												prefix: 'local',
+												localName: 'MySuperComp'
+											})
+		
+		);
+		
+		
+		ok( '<local:Button> is correctly parsed',
+			
+			customElements[2].should.have.properties({ 
 												namespaceURI: '*',
 												prefix: 'local',
 												localName: 'Button'
 											})
 		
-		assert.ok(1, '<local:Button> is in correctly parsed');
+		);
 		
-		customElements[2].should.have.properties({ 
+		
+		ok( '<js:Array> is correctly parsed',
+			
+			customElements[3].should.have.properties({ 
 												namespaceURI: 'data.*',
 												prefix: 'js',
 												localName: 'Array'
 											})
 		
-		assert.ok(1, '<js:Array> is in correctly parsed');
+		);
 		
-		customElements[3].should.have.properties({ 
+		
+		ok( '<js:XML> is correctly parsed',
+			
+			customElements[4].should.have.properties({ 
 												namespaceURI: 'data.*',
 												prefix: 'js',
 												localName: 'XML'
 											})
 		
-		assert.ok(1, '<js:XML> is in correctly parsed');
+		);
 		
-		customElements[4].should.have.properties({ 
+		
+		ok( '<Div> is correctly parsed',
+			
+			customElements[5].should.have.properties({ 
+												namespaceURI: 'http://www.w3.org/1999/xhtml',
+												prefix: null,
+												localName: 'Div'
+											})
+		
+		);
+		
+		
+		ok( '<Input> is correctly parsed',
+			
+			customElements[6].should.have.properties({ 
+												namespaceURI: 'http://www.w3.org/1999/xhtml',
+												prefix: null,
+												localName: 'Input'
+											})
+		
+		);
+		
+		
+		ok( '<Element> is correctly parsed',
+			
+			customElements[7].should.have.properties({ 
+												namespaceURI: 'http://www.w3.org/1999/xhtml',
+												prefix: null,
+												localName: 'Element'
+											})
+		
+		);
+		
+		
+		ok( '<jx:Element> is correctly parsed',
+		
+			customElements[8].should.have.properties({ 
 												namespaceURI: 'http://ns.devingfx.com/jxml/2015',
 												prefix: 'jx',
 												localName: 'Element'
 											})
+		);
 		
-		assert.ok(1, '<jx:Element> is in correctly parsed');
 		
-		customElements[5].should.have.properties({ 
-												namespaceURI: '*',
-												prefix: 'local',
-												localName: 'Demo'
-											})
+		ok( '<Demo> is correctly parsed',
 		
-		assert.ok(1, '<local:Demo> is in correctly parsed');
-		
-		customElements[6].should.have.properties({ 
+			customElements[9].should.have.properties({ 
 												namespaceURI: '*',
 												prefix: null,
 												localName: 'Demo'
 											})
+		);
 		
-		assert.ok(1, '<Demo> is in correctly parsed');
+		
+		// ok( '<local:Demo> is correctly parsed',
+		
+		// 	customElements[5].should.have.properties({ 
+		// 										namespaceURI: '*',
+		// 										prefix: 'local',
+		// 										localName: 'Demo'
+		// 									})
+		// );
 		
 		
-		customElements[7].should.have.properties({ 
+		ok( '<jx:Carousel> is correctly parsed',
+		
+			customElements[10].should.have.properties({ 
 												namespaceURI: 'http://ns.devingfx.com/jxml/2015',
 												prefix: 'jx',
 												localName: 'Carousel'
 											})
+		);
 		
-		assert.ok(1, '<jx:Carousel> is in correctly parsed');
 		
-		customElements[8].should.have.properties({ 
+		ok( '<jx:Editor> is correctly parsed',
+		
+			customElements[11].should.have.properties({ 
 												namespaceURI: 'http://ns.devingfx.com/jxml/2015',
 												prefix: 'jx',
 												localName: 'Editor'
 											})
+		);
 		
-		assert.ok(1, '<jx:Editor> is in correctly parsed');
 		
-		customElements[9].should.have.properties({ 
+		ok( '<Editor> is correctly parsed',
+		
+			customElements[12].should.have.properties({ 
 												namespaceURI: 'http://ns.devingfx.com/jxml/2015',
 												prefix: null,
 												localName: 'Editor'
 											})
+		);
 		
-		assert.ok(1, '<Editor> is in correctly parsed');
 		
 		// document.namespaces.should
 		// 	.be.an.instanceOf(Node)
@@ -213,6 +286,12 @@
 		// Clean up
 		// document.body.removeChild( div );
 		// delete div;
+	});
+	
+	QUnit.test( "", function( assert )
+	{
+		var ok = ( s, t ) => assert.ok( t, s );
+		
 	});
 	
 	
