@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:jx="http://ns.devingfx.com/jxml/2015"
+	  xmlns:js="data.*"
+	  xmlns:gfx="themes.*"
+	  xmlns:local="*">
+	
+	<!-- ChromeOS util: opening from Files app reloads the page but with http://localhost -->
+	<script src="//localhost:8080/launch-app.js" path="dev/Jilex Framework/src/bootstrap-XHTML.xhtml"></script>
+	
+	<head>
+		<title>loading ...</title>
+		<meta charset="utf-8"/>
+		<!--<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>-->
+		<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+		
+		
+		<style>
+			@import url(../../dist/core.css);
+			
+        	@namespace url(http://www.w3.org/1999/xhtml);
+			@namespace jx url(http://ns.devingfx.com/jxml/2015);
+        	@namespace js url(data.*);
+        	@namespace gfx url(themes.*);
+        	@namespace local url(*);
+			
+			html, body {
+				background: transparent;
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			
+			jx|Button {
+				display: inline-block;
+				background: #8A2BE2;
+				padding: 5px 10px;
+				color: #FFF;
+				font-family: sans-serif;
+				border-radius: 4px;
+				box-shadow: 0 2px 7px #8A2BE2;
+				text-shadow: 0 1px 0 black;
+			}
+			jx|Button:before {
+				content: attr(label);
+			}
+			
+			/*local|Button,*/
+			js|* { display: none; }
+		</style>
+		
+		
+		<!--TODO: get rid of jquery dependency -->
+		<script src="./bower_components/jquery/dist/jquery.min.js"></script>
+		
+		<script src="../../dist/jilex-classes.src.js" 
+				debug="true" 
+				loadHttpNs="false"
+				recreateQNodes="false"
+				implementStyles="true" 
+				useShadowDOM="true"
+				extendHTMLElements="true">
+		</script>
+		
+	</head>
+	
+	<body>
+		
+		<local:MyComp text="Coucou"/>
+		<local:MySuperComp/>
+		
+		<gfx:ThemeChooser id="themesMenu" class="close" side="right" jx:id="coucou"
+						  style="color: red"/>
+		
+		
+		
+		<local:Button>Coucou</local:Button>
+
+		
+		<js:Array id="myData">
+			<js:String>Coucou</js:String>
+			<js:String>Monde</js:String>
+			<js:Number>42</js:Number>
+			<js:Boolean>false</js:Boolean>
+			<js:Object>
+				<js:String key="title">Coucou</js:String>
+				<js:Number key="count">42</js:Number>
+				<js:Boolean key="doAnything">false</js:Boolean>
+			</js:Object>
+			<js:json>{"go": { "ahead": "with", "your": "plain", "json": true} }</js:json>
+			<js:RegExp modifier="g">(.*?)@(.*?).(.*?)</js:RegExp>
+		</js:Array>
+		
+		<js:XML source="./datas/catalog.xml"></js:XML>
+		
+		<Div/>
+		<Input/>
+		<Element/>
+		<jx:Element/>
+		
+		<Demo xmlns="*"></Demo>
+		
+		<jx:Carousel/>
+		<jx:Editor/>
+		
+		<Editor xmlns="http://ns.devingfx.com/jxml/2015">
+			<Button label="Editor"/>
+			<jx:TextInput value="monde"/>
+		</Editor>
+		
+		
+		
+		<div id="qunit"></div>
+		<div id="qunit-fixture"></div>
+		<script src="//code.jquery.com/qunit/qunit-1.19.0.js"></script>
+		<script src="../../node_modules/should/should.js"></script>
+		<script src="tests.js"></script>
+		
+	</body>
+</html>
