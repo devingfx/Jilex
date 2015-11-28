@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:jx="http://www.devingfx.com/2015/jxml">
+	
+	<script src="../../launch-app.js"></script>
+	
+	<head>
+		<title>Jilex test - document.namespaces</title>
+		<meta charset="utf-8"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		
+		<link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.19.0.css"/>
+			
+		<script src="../../app/libs/jquery-2.0.3.min.js"></script>
+		<script src="../../dist/jilex.js" 
+				recreateQNodes="false" 
+				loadHttpNs="false" 
+				useShadowDOM="false" 
+				implementStyles="false">
+		</script>
+		
+		
+		
+		
+	</head>
+	
+	<!-- Namespace manifests can be included in the page -->
+	<jx:Namespace uri="http://www.devingfx.com/2015/jxml">
+		<jx:Component id="Namespace"	class="jx.Namespace"></jx:Component>
+		<jx:Component id="Component"	class="jx.Component"></jx:Component>
+	</jx:Namespace>
+	
+	<jx:Namespace uri="*">
+		<jx:Component id="Demo"			url="Demo.xml"></jx:Component>
+	</jx:Namespace>
+	
+	<body debug="true">
+		
+		<div id="qunit"></div>
+		<div id="qunit-fixture"></div>
+		<script src="//code.jquery.com/qunit/qunit-1.19.0.js"></script>
+		<script src="../../node_modules/should/should.js"></script>
+		<script src="tests.js"></script>
+		
+	</body>
+</html>

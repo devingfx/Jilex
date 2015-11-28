@@ -33,11 +33,19 @@ module.exports = function(grunt) {
 				],
 				dest: 'dist/jilex5.src.js',
 			},
+			jilexLight: {
+				src: [
+					'src/jx/Class.js',
+					'src/jx/Node.load.js',
+				],
+				dest: 'dist/jilex-light.src.js',
+			}
 		},
 		
 		uglify: {
 			jilex: {
 				files: {
+					'dist/jilex-light.XHTML.js': ['dist/jilex-light.src.js'],
 					'dist/jilex.XHTML.js': ['dist/jilex.src.js'],
 					'dist/jilex.HTML5.js': ['dist/jilex5.src.js']
 				}
