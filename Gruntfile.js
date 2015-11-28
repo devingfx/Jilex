@@ -9,7 +9,13 @@ module.exports = function(grunt) {
 			},
 			jilex: {
 				src: [
-					'src/jx/*.js',
+					'src/jx/util/Array.create.js',
+					'src/jx/Node.js',
+					'src/jx/Document.js',
+					'src/jx/Namespace.js',
+					'src/jx/NamespaceList.js',
+					'src/jx/Component.js',
+					'src/jx/jilex.js',
 				],
 				dest: 'dist/jilex.src.js',
 			}
