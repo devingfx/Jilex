@@ -45,7 +45,6 @@ Aze
 	Aze2
 */
 	
-"use strict";
 	
 // var ss = document.getElementsByTagName('script'),
     // options = ss[ss.length - 1].attributes;

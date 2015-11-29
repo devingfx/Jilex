@@ -1,5 +1,3 @@
-"use strict";
-
 /*
 *: modified native
 >: can be apllied on
@@ -278,7 +276,7 @@ window.Element = class Element extends Natives.Element {
 		else
 			url = this.namespaceURI;
 		
-		return url + (url.charAt(url.length - 1) != '/' ? '/' : '') + this.localName + '.xml';
+		return url + (url.charAt(url.length - 1) != '/' ? '/' : '') + this.localName;
 		// return this.isXmlns ? this.ownerElement.namespaceURL + 'namespace.xml' : undefined;
 	}
 	

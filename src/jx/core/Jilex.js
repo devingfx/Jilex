@@ -1,10 +1,9 @@
-"use strict";
-
-(function( exports, doc ){
-	
+/**
+ * Jilex
+ */
 var Jilex = class {
 	
-	get xhtmlNS(){ return doc.documentElement.namespaceURI || 'http://www.w3.org/1999/xhtml' }
+	get xhtmlNS(){ return 'http://www.w3.org/1999/xhtml' }
 	get jxNS(){ return 'http://ns.devingfx.com/jxml/2015' }
 	get xmlnsNS(){ return 'http://www.w3.org/2000/xmlns/' }
 	get svgNS(){ return 'http://www.w3.org/2000/svg' }
@@ -40,10 +39,10 @@ var Jilex = class {
 		else
 			this.options = options;
 		
-		this.initialize();
+		this.preinitialize();
 	}
 	
-	initialize()
+	preinitialize()
 	{
 	    this._uids = {};
 	    
@@ -52,7 +51,7 @@ var Jilex = class {
 	    
 	    document.addEventListener(
 	    	'DOMContentLoaded', 
-			e => document.initialize()
+			e => document.preinitialize()
 		);
 		
 		return this;
@@ -254,11 +253,7 @@ var Jilex = class {
 }
 
 
-var ss = document.getElementsByTagName('script');
-Jilex = exports.Jilex = new Jilex( ss[ss.length - 1].attributes );
 
-
-})( window, document )
 
 
 

@@ -1,5 +1,3 @@
-"use strict";
-
 /************/
 /* Document */
 /************/
@@ -114,23 +112,53 @@ Document.prototype._createStyleImpl = ShadowRoot.prototype._createStyleImpl = fu
 	// WebKit hack :(
 	_impl.type = 'text/css';
 	_impl.appendChild( document.createTextNode("") );
-	(this.head || this).appendChild( _impl );
+	(this.head || this.documentElement || this).appendChild( _impl );
 }
 
 /**
- * initialize
+ * preinitialize
  * Loops on nodes to extend it with appropriate class.
  * @param {Element} root Optional: The node from witch loop on all children, otherwise the Document.
  */
-Document.prototype.initialize = ShadowRoot.prototype.initialize = function( root )
+Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function( root )
 {
-	Array.from( (root || this).querySelectorAll('*') )
+	if( this._preinitialized ) return;
+		this._preinitialized = true;
+		
+
+	// Resolve last local scripts
+	// localScript();
+
+	// Define bindings
+	// bindings( document.body, true );
+	
+	// (Very) simple responsive helper
+	if( /mobile/i.test(navigator.userAgent) )
+		$('html').addClass('mobile');
+	else
+		$('html').addClass('desktop');
+	
+	
+	
+	
+	
+	
+	root = root || this;
+	Array.from( root.querySelectorAll('*') )
 		.map( node => {
 			// Custom namespace nodes are parsed as Natives.Element, but not our overrided Element,
 			// and Natives.Element is super of overrided Element. Conversely, HTMLElement is child 
 			// class of overrided Element, so no need of explicitly extend overrided Element.
 			if( node.constructor == Natives.Element )
 				node.extends( Element );
+			
+			// if( Jilex.avoidNs.indexOf(node.namespaceURI) == -1
+			//  || Jilex.avoidNames.indexOf(node.nodeName) == -1 )
+			node.extends()
+				// .then( node => {
+				// 	// Set attributes has properties (ak:executeBindings)
+					
+				// })
 			
 			// load dependency
 			/*!node.Class
@@ -143,53 +171,78 @@ Document.prototype.initialize = ShadowRoot.prototype.initialize = function( root
 			
 			
 		})
+	
+	
+	
+	root.dispatchEvent(new Event('preinitialize'));
 }
 
-// Document.prototype.loadComponent = ShadowRoot.prototype.loadComponent = function( node )
-// {
-// 	if( !node.Class )
-// 		$.get( node.url ).then( function( doc )
-// 		{
-// 			doc.initialize();
-// 			var sup = doc.documentElement.constructor,
-// 				supTag = doc.documentElement.localName,
-// 				pack = doc.documentElement.namespace.package.packageName,
-// 				klass = 'class ' + node.localName + ' extends ' + pack + '.' + supTag,
-// 				methods = [
-// 					'\n\
-// 					constructor()\n\
-// 					{\n\
-// 						return new Element("' + (node.prefix ? node.prefix + ':' : '') + node.localName + '").extends().initialize()\n\
-// 					}',
-// 					'\n\
-// 					initialize()\n\
-// 					{\n\
-// 						var root;\n\
-// 						this.extends(jx.core.UIComponent);\n\
-// 						this.initialize();\n\
-// 						this.rawChildren.appendChild( root = this.Class.document.documentElement.cloneNode(true) );\n\
-// 						root.extends( Element );\n\
-// 						if( Jilex.options.useShadowDOM )\n\
-// 						{\n\
-// 							root.fixForShadowRoot();\n\
-// 							this.rawChildren.initialize();\n\
-// 						}\n\
-// 					}',
-// 					'\naze'+node.localName+'(){}'
-// 				];
-// 			console.log( klass + ' {\n' + methods.join('\n') + '\n}');
+/**
+ * initialize
+ * Loops on nodes to extend it with appropriate class.
+ * @param {Element} root Optional: The node from witch loop on all children, otherwise the Document.
+ */
+Document.prototype.initialize = ShadowRoot.prototype.initialize = function( root )
+{
+	root = root || this;
+	Array.from( root.querySelectorAll('*') )
+		.map( node => {
 			
-// 			if( !Package(pack).hasOwnProperty(supTag) )
-// 				document.loadComponent
-// 			var klass = eval( klass + ' {\n' + methods.join('\n') + '\n}');
-// 			klass.document = doc;
-// 			node.namespace.package[node.localName] = klass;
-			
-// 			node.constructor != node.Class
-// 			 && node.extends().initialize();
-// 		})
-// 
-// }
+		})
+	root.dispatchEvent(new Event('initialize'));
+}
+
+
+Document.prototype.loadComponent = ShadowRoot.prototype.loadComponent = function( node, ext )
+{
+	if( !node.Class )
+		$.get( node.url + (ext || '.xhtml') )
+			.then(
+				this.onComponentLoaded.bind( this, node ),
+				err => ext != '.js' && this.loadComponent( node, '.js' )
+			)
+}
+
+Document.prototype.onComponentLoaded = ShadowRoot.prototype.onComponentLoaded = function( node, doc )
+{
+	doc.initialize();
+	var sup = doc.documentElement.constructor,
+		supTag = doc.documentElement.localName,
+		pack = doc.documentElement.namespace.package.packageName,
+		klass = 'class ' + node.localName + ' extends ' + pack + '.' + supTag,
+		methods = [
+			'\n\
+			constructor()\n\
+			{\n\
+				return new Element("' + (node.prefix ? node.prefix + ':' : '') + node.localName + '").extends().initialize()\n\
+			}',
+			'\n\
+			initialize()\n\
+			{\n\
+				var root;\n\
+				this.extends(jx.core.UIComponent);\n\
+				this.initialize();\n\
+				this.rawChildren.appendChild( root = this.Class.document.documentElement.cloneNode(true) );\n\
+				root.extends( Element );\n\
+				if( Jilex.options.useShadowDOM )\n\
+				{\n\
+					root.fixForShadowRoot();\n\
+					this.rawChildren.initialize();\n\
+				}\n\
+			}',
+			'\naze'+node.localName+'(){}'
+		];
+	console.log( klass + ' {\n' + methods.join('\n') + '\n}');
+	
+	if( !Package(pack).hasOwnProperty(supTag) )
+		document.loadComponent
+	var klass = eval( klass + ' {\n' + methods.join('\n') + '\n}');
+	klass.document = doc;
+	node.namespace.package[node.localName] = klass;
+	
+	node.constructor != node.Class
+	 && node.extends().initialize();
+}
 
 // INFO: on compatibility : http://www.meekostuff.net/blog/Overriding-DOM-Methods/
 // Document.prototype._native_createElement = Document.prototype.createElement;
