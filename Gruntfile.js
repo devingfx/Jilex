@@ -61,7 +61,7 @@ module.exports = function(grunt) {
 					'src/jx/core/Attr.js',
 					'src/jx/core/XmlnsAttr.js',
 					'src/jx/core/Element.js',
-					'src/jx/core/Namespace.js',
+					// 'src/jx/core/Namespace.js',
 					'src/jx/core/Jilex.js',
 				],
 				dest: 'dist/jilex-classes.src.js',

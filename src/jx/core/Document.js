@@ -159,7 +159,7 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 				// 	// Set attributes has properties (ak:executeBindings)
 					
 				// })
-			
+			node[node.constructor.name] && node[node.constructor.name]();
 			// load dependency
 			/*!node.Class
 			 && * /Jilex.loadComponent( node )

@@ -39,23 +39,22 @@ var Jilex = class {
 		else
 			this.options = options;
 		
-		this.preinitialize();
-	}
-	
-	preinitialize()
-	{
 	    this._uids = {};
 	    
 	    if( this.options.implementStyles )
 	    	document._createStyleImpl();
 	    
-	    document.addEventListener(
-	    	'DOMContentLoaded', 
-			e => document.preinitialize()
-		);
-		
-		return this;
+	    document.addEventListener( 'DOMContentLoaded', e => document.preinitialize() );
+	    window.addEventListener( 'load', e => document.initialize() );
+	    
+		// this.initialize();
 	}
+	
+	// initialize()
+	// {
+		
+	// 	return this;
+	// }
     
     getUniqueId( node )
     {
