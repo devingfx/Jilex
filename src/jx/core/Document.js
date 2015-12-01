@@ -30,21 +30,9 @@ Object.defineProperty( Document.prototype, 'xmlns', {
  * @exemple document.xmlns.filter([].filter.ns.URI("http://ns.exemple.com"))
  * @exemple document.xmlns.filter([].filter.ns.prefix('foo'))
  */
-[].filter.ns = {
-	URI: function( uri )
-		{
-			return function( xmlns )
-					{
-						return xmlns.value == uri;
-					}
-		},
-	prefix: function( _prefix )
-		{
-			return function( xmlns )
-					{
-						return xmlns.name.split(':').pop() == _prefix;
-					}
-		}
+jx.ArrayUtil.filters = {
+	URIs: uri => xmlns => xmlns.value == uri,
+	prefix: _prefix => xmlns => xmlns.name.split(':').pop() == _prefix
 };
 
 /**
@@ -123,9 +111,9 @@ Document.prototype._createStyleImpl = ShadowRoot.prototype._createStyleImpl = fu
 Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function( root )
 {
 	if( this._preinitialized ) return;
-		this._preinitialized = true;
-		
-
+	this._preinitialized = true;
+	
+	
 	// Resolve last local scripts
 	// localScript();
 
@@ -142,9 +130,10 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 	
 	
 	
+	root = root || this.documentElement || this;
 	
-	root = root || this;
-	Array.from( root.querySelectorAll('*') )
+	[root]
+		.concat( Array.from(root.querySelectorAll('*')) )
 		.map( node => {
 			// Custom namespace nodes are parsed as Natives.Element, but not our overrided Element,
 			// and Natives.Element is super of overrided Element. Conversely, HTMLElement is child 
@@ -184,8 +173,12 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
  */
 Document.prototype.initialize = ShadowRoot.prototype.initialize = function( root )
 {
-	root = root || this;
-	Array.from( root.querySelectorAll('*') )
+	if( this._initialized ) return;
+	this._initialized = true;
+	
+	root = root || this.documentElement || this;
+	[root]
+		.concat( Array.from(root.querySelectorAll('*')) )
 		.map( node => {
 			
 		})
