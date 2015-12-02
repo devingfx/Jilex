@@ -30,6 +30,7 @@ Object.defineProperty( Document.prototype, 'xmlns', {
  * @exemple document.xmlns.filter([].filter.ns.URI("http://ns.exemple.com"))
  * @exemple document.xmlns.filter([].filter.ns.prefix('foo'))
  */
+Package('jx.ArrayUtil');
 jx.ArrayUtil.filters = {
 	URIs: uri => xmlns => xmlns.value == uri,
 	prefix: _prefix => xmlns => xmlns.name.split(':').pop() == _prefix
@@ -122,11 +123,9 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 	
 	// (Very) simple responsive helper
 	if( /mobile/i.test(navigator.userAgent) )
-		$('html').addClass('mobile');
+		document.documentElement.classList.add('mobile');
 	else
-		$('html').addClass('desktop');
-	
-	
+		document.documentElement.classList.add('desktop');
 	
 	
 	
