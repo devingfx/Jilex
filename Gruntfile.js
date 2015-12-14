@@ -77,12 +77,23 @@ module.exports = function(grunt) {
 					'dist/jilex.HTML5.js': ['dist/jilex5.src.js']
 				}
 			}
+		},
+		
+		watch: {
+			scripts: {
+				files: 'src/jx/**/*.js',
+				tasks: ['concat:jilexClasses'],
+				options: {
+					debounceDelay: 250,
+				},
+			},
 		}
 	});
 
   // Load the plugins that provides the "uglify" task and "concat" task.
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-watch');
   
   // Default task(s).
   grunt.registerTask('default', ['concat:jilex']);

@@ -27,8 +27,71 @@ Aze
 
 
 /*******************/
-/* Element */
+/* Element         */
 /*******************/
+
+var _qsa = Element.prototype.querySelectorAll,
+	_dqsa = Document.prototype.querySelectorAll,
+	_nss = function( root )
+	{
+		var nss = '';
+	    for( var ns in root.xmlns )
+	      	if(ns != 'null')
+	      	nss += '@namespace '+ns.split(':').pop()
+	      		+' url('+root.xmlns[ns].value+');\n' ;
+	     return nss;
+	};
+
+Element.prototype.querySelectorAll = function( selectors )
+{
+	if( selectors.indexOf('|') )
+	{
+		var style = this.ownerDocument.createElement('style');
+		this.appendChild( style );
+		// debugger;
+		
+		style.innerHTML = _nss( document.documentElement ) + selectors + '{content:"__querySelected__"}';
+		
+		elements = Array.from( this.getElementsByTagName('*') )
+						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
+		
+		style.parentNode.removeChild( style );
+		
+		return elements;
+	}
+	else
+		return _qsa.call( this, selector )
+};
+
+Document.prototype.querySelectorAll = function( selectors )
+{
+	if( selectors.indexOf('|') )
+	{
+		var style = this.createElement('style');
+		this.documentElement.appendChild( style );
+		// debugger;
+		
+		style.innerHTML = _nss( this.documentElement ) + selectors + '{content:"__querySelected__"}';
+		
+		elements = Array.from( this.getElementsByTagName('*') )
+						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
+		
+		style.parentNode.removeChild( style );
+		
+		return elements;
+	}
+	else
+		return _dqsa.call( this, selector )
+};
+
+Element.prototype.querySelector = Document.prototype.querySelector = function( selectors )
+{
+	var elements = this.querySelectorAll( selectors );
+	return elements.length ? elements[0] : null;
+};
+
+		
+// TODO: must reimplement also Element.matches
 
 /**
  * Element
@@ -467,7 +530,7 @@ window.Element = class Element extends Natives.Element {
 			});
 	}
 	
-	/* TODO: verrides */
+	/* TODO: overrides */
 	
 	// Element.prototype.appendChild() > init child > should load etc...
 	// Element.prototype.innerHTML > init childs > should load etc...

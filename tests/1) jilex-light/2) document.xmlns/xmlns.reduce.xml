@@ -10,6 +10,16 @@
 	  xmlns:model="data.models.*"
 	  xmlns:jq="jquery.cdn"
 	  xmlns:my="/myComponents/"
+	  xmlns:type="https://github.com/Microsoft/TypeScript"
+	  xmlns:coffee="http://ns.coffeescript.org/"
+	  xmlns:es6="https://babeljs.io/"
+	  xmlns:js="eval"
+	  xmlns:as="https://asjs.io/"
+	  xmlns:mx="apache.flex"
+	  xmlns:3D="THREE.js"
+	  xmlns:sass=""
+	  xmlns:less=""
+	  xmlns:svg="http://www.w3.org/2000/svg"
 	  xmlns:local="*">
 	
 	<script src="../../launch-app.js"></script>
@@ -17,7 +27,7 @@
 	<head>
 		<title>Jilex QUnit test - document.xmlns reduce</title>
 		<meta charset="utf-8"/>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
 		
 		<script src="../../app/libs/jquery-2.0.3.min.js"></script>
 		<script src="../../dist/jilex-light.min.js" autoLoad="false"></script>
@@ -87,10 +97,10 @@
 	
 		<Demo xmlns="*">
 			<svg xmlns="http://www.w3.org/2000/svg"
-			 xmlns:xlink="http://www.w3.org/1999/xlink" 
-			 viewBox="0 0 24 24">
-			<use xlink:href="#icon_cog"/>
-		</svg>
+				 xmlns:xlink="http://www.w3.org/1999/xlink" 
+				 viewBox="0 0 24 24">
+				<use xlink:href="#icon_cog"/>
+			</svg>
 		</Demo>
 		
 		<jx:Editor xmlns:jx="http://www.devingfx.com/2015/jxml"/>
@@ -98,6 +108,72 @@
 		<Editor xmlns="http://www.devingfx.com/2015/jxml">
 			<Button label="Coucou"/>
 		</Editor>
+		
+		
+		
+		
+		<type:Script>
+		var hello:string = "World";
+		</type:Script>
+		
+		
+		<coffee:Script>
+		fill = (container, liquid = "coffee") -> "Filling the #{container} with #{liquid}..."
+		</coffee:Script>
+		
+		
+		<es6:Script>
+		class PasClass extends Coool { constructor(){ super('!'); } }
+		</es6:Script>
+		
+		
+		<js:Script>
+		((function(a,x){}(function(a,x){}))()(function(a,x)())(function(a,x))()
+		</js:Script>
+		
+		
+		<as:Script>
+		package my { public class MyClass { private var foo:Bar; function MyClass(){} } }
+		</as:Script>
+		<mx:Script>
+		
+		</mx:Script>
+		
+		
+		<sass:Style>
+		
+		</sass:Style>
+		
+		
+		<less:Style>
+		
+		</less:Style>
+		
+		
+		<THREE:WebGLRenderer>
+			<THREE:Scene>
+				<THREE:AmbientLight intensity="0.3"/>
+				<THREE:Sphere radius="45"/>
+			</THREE:Scene>
+		</THREE:WebGLRenderer>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		
 		
