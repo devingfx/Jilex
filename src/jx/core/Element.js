@@ -31,7 +31,8 @@ Aze
 /*******************/
 
 var _qsa = Element.prototype.querySelectorAll,
-	_dqsa = Document.prototype.querySelectorAll,
+	_matches = Element.prototype.matches,
+	_dqsa = window.qsa =  Document.prototype.querySelectorAll,
 	_nss = function( root )
 	{
 		var nss = '';
@@ -42,7 +43,7 @@ var _qsa = Element.prototype.querySelectorAll,
 	     return nss;
 	};
 
-Element.prototype.querySelectorAll = function( selectors )
+Element.prototype.querySelectorAll = function querySelectorAll( selectors )
 {
 	if( selectors.indexOf('|') )
 	{
@@ -52,7 +53,7 @@ Element.prototype.querySelectorAll = function( selectors )
 		
 		style.innerHTML = _nss( document.documentElement ) + selectors + '{content:"__querySelected__"}';
 		
-		elements = Array.from( this.getElementsByTagName('*') )
+		var elements = Array.from( this.getElementsByTagName('*') )
 						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
 		
 		style.parentNode.removeChild( style );
@@ -63,7 +64,7 @@ Element.prototype.querySelectorAll = function( selectors )
 		return _qsa.call( this, selector )
 };
 
-Document.prototype.querySelectorAll = function( selectors )
+Document.prototype.querySelectorAll = function querySelectorAll( selectors )
 {
 	if( selectors.indexOf('|') )
 	{
@@ -73,7 +74,7 @@ Document.prototype.querySelectorAll = function( selectors )
 		
 		style.innerHTML = _nss( this.documentElement ) + selectors + '{content:"__querySelected__"}';
 		
-		elements = Array.from( this.getElementsByTagName('*') )
+		var elements = Array.from( this.getElementsByTagName('*') )
 						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
 		
 		style.parentNode.removeChild( style );
@@ -84,14 +85,32 @@ Document.prototype.querySelectorAll = function( selectors )
 		return _dqsa.call( this, selector )
 };
 
-Element.prototype.querySelector = Document.prototype.querySelector = function( selectors )
+Element.prototype.querySelector = Document.prototype.querySelector = function querySelector( selectors )
 {
 	var elements = this.querySelectorAll( selectors );
 	return elements.length ? elements[0] : null;
 };
 
-		
 // TODO: must reimplement also Element.matches
+Element.prototype.matches = function matches( selectors )
+{
+	if( selectors.indexOf('|') )
+	{
+		var style = this.createElement('style');
+		this.appendChild( style );
+		// debugger;
+		
+		style.innerHTML = _nss( document.documentElement ) + selectors + '{content:"__querySelected__"}';
+		
+		var flag = getComputedStyle(this).content == '"__querySelected__"';
+		
+		style.parentNode.removeChild( style );
+		
+		return flag;
+	}
+	else
+		return _matches.call( this, selector )
+};
 
 /**
  * Element
