@@ -45,7 +45,7 @@ var _qsa = Element.prototype.querySelectorAll,
 
 Element.prototype.querySelectorAll = function querySelectorAll( selectors )
 {
-	if( selectors.indexOf('|') )
+	if( selectors.indexOf('|') != -1 )
 	{
 		var style = this.ownerDocument.createElement('style');
 		this.appendChild( style );
@@ -61,12 +61,12 @@ Element.prototype.querySelectorAll = function querySelectorAll( selectors )
 		return elements;
 	}
 	else
-		return _qsa.call( this, selector )
+		return _qsa.call( this, selectors )
 };
 
 Document.prototype.querySelectorAll = function querySelectorAll( selectors )
 {
-	if( selectors.indexOf('|') )
+	if( selectors.indexOf('|') != -1 )
 	{
 		var style = this.createElement('style');
 		this.documentElement.appendChild( style );
@@ -82,7 +82,7 @@ Document.prototype.querySelectorAll = function querySelectorAll( selectors )
 		return elements;
 	}
 	else
-		return _dqsa.call( this, selector )
+		return _dqsa.call( this, selectors )
 };
 
 Element.prototype.querySelector = Document.prototype.querySelector = function querySelector( selectors )
@@ -94,9 +94,9 @@ Element.prototype.querySelector = Document.prototype.querySelector = function qu
 // TODO: must reimplement also Element.matches
 Element.prototype.matches = function matches( selectors )
 {
-	if( selectors.indexOf('|') )
+	if( selectors.indexOf('|') != -1 )
 	{
-		var style = this.createElement('style');
+		var style = document.createElement('style');
 		this.appendChild( style );
 		// debugger;
 		
@@ -109,7 +109,7 @@ Element.prototype.matches = function matches( selectors )
 		return flag;
 	}
 	else
-		return _matches.call( this, selector )
+		return _matches.call( this, selectors )
 };
 
 /**
