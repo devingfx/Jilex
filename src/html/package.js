@@ -55,10 +55,10 @@ Package('xml.*');
 xml.Document = XMLDocument;
 
 
-var _xhtmlNS = 'http://www.w3.org/1999/xhtml';
+window._xhtmlNS = 'http://www.w3.org/1999/xhtml';
 Package('').html = Package( _xhtmlNS );
 html.URI = _xhtmlNS;
-delete _xhtmlNS;
+delete window._xhtmlNS;
 html.Document = HTMLDocument;
 html.Element = HTMLElement;
 
