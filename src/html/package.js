@@ -55,8 +55,10 @@ Package('xml.*');
 xml.Document = XMLDocument;
 
 
-Package('html.*');
-html.URI = document.createElement('div').namespaceURI;
+var _xhtmlNS = 'http://www.w3.org/1999/xhtml';
+Package('').html = Package( _xhtmlNS );
+html.URI = _xhtmlNS;
+delete _xhtmlNS;
 html.Document = HTMLDocument;
 html.Element = HTMLElement;
 

@@ -1,7 +1,7 @@
 /**
  * Jilex
  */
-var Jilex = class {
+var Jilex = class Jilex {
 	
 	get xhtmlNS(){ return 'http://www.w3.org/1999/xhtml' }
 	get jxNS(){ return 'http://ns.devingfx.com/jxml/2015' }

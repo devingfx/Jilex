@@ -25,3 +25,9 @@ function Package( QName )
 	}
 	return tar;
 }
+Package.aliases = {
+	"http://www.w3.org/1999/xhtml":						"html.*",
+	"http://ns.devingfx.com/jxml/2015":					"jx.*",
+	"http://www.ecma-international.org/ecma-262/6.0/":	"js6.*",
+	"http://ns.adobe.com/mxml/2009":					"mx.*"
+};

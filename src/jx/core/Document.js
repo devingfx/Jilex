@@ -162,7 +162,7 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 	
 	
 	
-	root.dispatchEvent(new Event('preinitialize'));
+	root.dispatchEvent( new Event('preinitialize') );
 }
 
 /**
@@ -181,7 +181,7 @@ Document.prototype.initialize = ShadowRoot.prototype.initialize = function( root
 		.map( node => {
 			
 		})
-	root.dispatchEvent(new Event('initialize'));
+	root.dispatchEvent( new Event('initialize') );
 }
 
 
