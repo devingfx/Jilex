@@ -188,7 +188,10 @@ Document.prototype.initialize = ShadowRoot.prototype.initialize = function( root
 	return this;
 }
 
-
+Document.prototype.createElement = function( nodeName )
+{
+	return this.createElementNS( html.URI, nodeName );//.extends()
+}
 Document.prototype.loadComponent = ShadowRoot.prototype.loadComponent = function( node, ext )
 {
 	if( !node.Class )
