@@ -2,6 +2,8 @@
 /* Document */
 /************/
 
+window.DOC = ( str, type ) => new DOMParser().parseFromString( str, type || 'text/html' );
+
 /**
  * xmlns
  * Select all the nodes in document and filter attributes that are in xmlns namespaceURI.
@@ -163,6 +165,7 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 	
 	
 	root.dispatchEvent( new Event('preinitialize') );
+	return this;
 }
 
 /**
@@ -182,6 +185,7 @@ Document.prototype.initialize = ShadowRoot.prototype.initialize = function( root
 			
 		})
 	root.dispatchEvent( new Event('initialize') );
+	return this;
 }
 
 

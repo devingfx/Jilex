@@ -249,6 +249,8 @@ var Jilex = class Jilex {
 			// })
 		
 	}
+	
+	get isJilex(){return true}
 }
 
 

@@ -559,7 +559,7 @@ window.Element = class Element extends Natives.Element {
 	
 	
 	
-	azeElement(){}
+	get isElement(){return true}
 	
 }
 
@@ -581,7 +581,7 @@ window.HTMLElement = class HTMLElement extends window.HTMLElement {
 		return node;
 	}
 	
-	azeHTMLElement(){}
+	get isHTMLElement(){return true}
 }
 // Handy shortcut: var DOM = tag => new HTMLElement( tag )
 
@@ -596,7 +596,7 @@ window.HTMLElement = class HTMLElement extends window.HTMLElement {
  * jx.core.Element
  * All jx.core.Element have jx namespaceURI.
  */
-jx.core.Element = class JXElement extends window.Element {
+jx.core.Element = class JXMLElement extends window.Element {
 	static get namespaceURI()
 	{
 		return 'http://ns.devingfx.com/jxml/2015';
@@ -613,8 +613,7 @@ jx.core.Element = class JXElement extends window.Element {
 		return node;
 	}
 	
-	azeJXElement(){}
-
+	get isJXMLElement(){return true}
 }
 
 
@@ -639,7 +638,7 @@ jx.core.UIComponent = jx.UIComponent = class UIComponent extends Element {
 		}
 	}
 	
-	azeUIComponent(){}
+	get isUIComponent(){return true}
 }
 
 window.Demo = class Demo extends jx.core.UIComponent {
@@ -668,7 +667,7 @@ window.Demo = class Demo extends jx.core.UIComponent {
 			})
 	}
 	
-	azeDemo(){}
+	get isDemo(){return true}
 }
 
 
@@ -680,6 +679,8 @@ jx.Carousel = class Carousel extends Element {
 	}
 	next(){}
 	prev(){}
+	
+	get isCarousel(){return true}
 }
 
 
@@ -699,7 +700,7 @@ jx.Input = class Input extends html.Input
 		super.value = 'jx ' + v;
 	}
 	
-	azeInput(){}
+	get isInput(){return true}
 }
 /*
 document.body.appendChild( c = new jx.Input );
