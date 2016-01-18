@@ -43,7 +43,7 @@ var _qsa = Element.prototype.querySelectorAll,
 	     return nss;
 	};
 
-Element.prototype.querySelectorAll = function querySelectorAll( selectors )
+Element.prototype.querySelectorAll = Element.prototype.$ = function querySelectorAll( selectors )
 {
 	if( selectors.indexOf('|') != -1 )
 	{
@@ -61,10 +61,10 @@ Element.prototype.querySelectorAll = function querySelectorAll( selectors )
 		return elements;
 	}
 	else
-		return _qsa.call( this, selectors )
+		return Array.from( _qsa.call( this, selectors ) )
 };
 
-Document.prototype.querySelectorAll = function querySelectorAll( selectors )
+Document.prototype.querySelectorAll = Document.prototype.$ = function querySelectorAll( selectors )
 {
 	if( selectors.indexOf('|') != -1 )
 	{
@@ -82,7 +82,7 @@ Document.prototype.querySelectorAll = function querySelectorAll( selectors )
 		return elements;
 	}
 	else
-		return _dqsa.call( this, selectors )
+		return Array.from( _dqsa.call( this, selectors ) )
 };
 
 Element.prototype.querySelector = Document.prototype.querySelector = function querySelector( selectors )
