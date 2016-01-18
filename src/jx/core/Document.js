@@ -144,7 +144,8 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 			
 			// if( Jilex.avoidNs.indexOf(node.namespaceURI) == -1
 			//  || Jilex.avoidNames.indexOf(node.nodeName) == -1 )
-			node.extends()
+			node.extends();
+			node.addToContext( window );
 				// .then( node => {
 				// 	// Set attributes has properties (ak:executeBindings)
 					

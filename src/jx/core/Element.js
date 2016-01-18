@@ -565,6 +565,7 @@ window.Element = class Element extends Natives.Element {
 
 // window.Jilex && Jilex.options.extendHTMLElements && 
 Object.setPrototypeOf( HTMLElement.prototype, Element.prototype );
+Object.setPrototypeOf( SVGElement.prototype, Element.prototype );
 
 window.HTMLElement = class HTMLElement extends window.HTMLElement {
 	static get namespaceURI()
