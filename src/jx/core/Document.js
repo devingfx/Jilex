@@ -106,6 +106,15 @@ Document.prototype._createStyleImpl = ShadowRoot.prototype._createStyleImpl = fu
 	(this.head || this.documentElement || this).appendChild( _impl );
 }
 
+Object.defineProperty( Document.prototype, 'isHtml5', {
+	get: function()
+	{
+		return document.doctype.name == "html"
+				&& document.doctype.systemId == "" 
+				&& document.doctype.publicId == ""
+	}	
+})
+
 /**
  * preinitialize
  * Loops on nodes to extend it with appropriate class.
@@ -124,10 +133,10 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 	// bindings( document.body, true );
 	
 	// (Very) simple responsive helper
-	if( /mobile/i.test(navigator.userAgent) )
-		document.documentElement.classList.add('mobile');
-	else
-		document.documentElement.classList.add('desktop');
+	// if( /mobile/i.test(navigator.userAgent) )
+	// 	document.documentElement.classList.add('mobile');
+	// else
+	// 	document.documentElement.classList.add('desktop');
 	
 	
 	

@@ -96,6 +96,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   
   // Default task(s).
-  grunt.registerTask('default', ['concat:jilex']);
+  grunt.registerTask('default', ['concat:jilexClasses']);
 
 };
