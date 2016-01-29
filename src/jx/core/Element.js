@@ -124,7 +124,26 @@ window.Element = class Element extends Natives.Element {
 	
 	Element()
 	{
-		this.extends()
+		// this.extends();
+		console.log('Element(%o)', this);
+		// Set attributes has properties
+		var _ownerElement = this;
+		for(var i = 0, _attr; _attr = this.attributes[i]; i++)
+		// Array.from( this.attributes ).map(function ( _attr )
+		{
+			// console.log(_attr, _ownerElement);
+			// _ownerElement.attributes[_attr.name].toto=23;
+			// window[_attr.name] = _attr;
+			// If this is an xmlns Attr
+			if( _attr.isXmlns )
+				this.attributes[i].extends( XmlnsAttr );
+			else if( Element.avoidAttribute.indexOf( _attr.name ) == -1 )
+				this.attributes[i].extends( jx.core.Binding ).Binding( _ownerElement );
+				// !_attr._initialized && _attr.initialize();
+			console.log(_attr.constructor);
+			_ownerElement.attributes[_attr.name] = _attr;
+		}
+		// );
 	}
 	// inheritance test
 	// get children()
@@ -158,7 +177,7 @@ window.Element = class Element extends Natives.Element {
 		var _this = this,
 			_ns = this.namespace;
 		
-		!_ns._initialized && _ns.initialize();
+		// !_ns._initialized && _ns.initialize();
 		
 		
 		// If the namespace is not loaded
@@ -296,7 +315,8 @@ window.Element = class Element extends Natives.Element {
 				.map(function( attr )
 				{
 					var prefix = attr.name && attr.name.split(':')[1] || null;
-					 _xmlns[prefix] = attr.initialize();
+					 //_xmlns[prefix] = attr.extends( XmlnsAttr );
+					 //_xmlns[prefix] = attr.initialize();
 				})
 			return _xmlns;
 		}
@@ -562,6 +582,8 @@ window.Element = class Element extends Natives.Element {
 	get isElement(){return true}
 	
 }
+
+Element.avoidAttribute = 'id class style src xmlns'.split(' ');
 
 // window.Jilex && Jilex.options.extendHTMLElements && 
 Object.setPrototypeOf( HTMLElement.prototype, Element.prototype );

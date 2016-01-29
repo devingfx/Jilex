@@ -7,7 +7,7 @@
  * XmlnsAttr class
  * @extends Loadable
  */
-window.XmlnsAttr = class XmlnsAttr extends Loadable {
+window.XmlnsAttr = class XmlnsAttr extends Attr {
 	
 	// static get ATTRIBUTE_PATTERN(){ return /^xmlns(:|$)(.*)/ }
 	// static get PACKAGE_PATTERN(){ return /^((\w+)[.\w*]*)\.\*$/ }
