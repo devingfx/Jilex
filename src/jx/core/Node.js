@@ -90,23 +90,40 @@ function inheritedPropertyNames(obj) {
 
 window.Node = class Node extends Natives.Node {
 	
-	constructor( uri, nodeName )
+	constructor()
 	{
-		if( typeof nodeName == 'undefined' )
+		try{super()}catch(e){};
+        var objects = Array.from(arguments).filter( arg=>typeof arg == 'object' ),
+			strings = Array.from(arguments).filter( arg=>typeof arg == 'string' ),
+			uri = null, nodeName = 'n';
+		
+
+		if( strings.length == 1 )
 		{
-			nodeName = uri;
-			uri = null;
+			nodeName = strings[0];
 			if( nodeName.indexOf(':') != -1 )
 				uri = document.documentElement.lookupNamespaceURI( nodeName.split(':')[0] );
 		}
-		
-		return document.createElementNS( uri || html.URI, nodeName )
+		else if( strings.length == 2 )
+		{
+			uri = strings[0];
+			nodeName = strings[1];
+		}
+        
+		var node = document.createElementNS( uri || html.URI, nodeName );
+        
+		if( objects.length )
+		{
+			objects.map( o => node.merge(o) )
+		}
+        
+        return node;
 	}
 	
-	reconstruct()
-	{
-		this.extends()
-	}
+	// reconstruct()
+	// {
+	// 	this.extends()
+	// }
 	
 	/**
 	 * applyClass( klass:Function )
@@ -193,11 +210,11 @@ window.Node = class Node extends Natives.Node {
 	
 	cloneNode( recursive )
 	{
-		console.log( 'cloneNode:', this );
+		//console.log( 'cloneNode:', this );
 		var node = super.cloneNode( recursive );
 		node.extends( this.constructor );
 		
-		recursive && 
+		recursive && this.children &&
 			Array.from( this.children, (child, i) => node.children[i].extends(child.constructor) )
 		
 		return node;
@@ -208,28 +225,142 @@ window.Node = class Node extends Natives.Node {
 		
 	}
 	
+    /*addProperty( name )
+    {
+        Object.defineProperty( this, name, { 
+            get:function()
+            {
+                return this.$(name)[0].textContent 
+            }, 
+            set:function(v)
+            {
+                !this.$(name).length && this.appendChild(new Node(name));
+                this.$(name)[0].innerText = v;
+            } 
+        })
+    }*/
+    
+    merge( object )
+	{
+		
+        function json2xml( tag, obj )
+        {
+            tag = isNaN(parseInt(tag)) ? tag.replace( /\$/g, '' ) : '';
+            var html = '',
+                OTag = tag ? '<'+tag+' ' : '',
+                CTag = tag ? '</'+tag.split(' ').shift()+'>' : '';
+            
+            switch( typeof obj )
+            {
+                case 'object':
+                    if( Array.isArray(obj) )
+                        html = obj.map( (o,i)=>json2xml(i,o) ).join('')
+                    else
+                        html = Object.getOwnPropertyNames( obj )
+                                        .map( s => s[0]=='@' ? ((OTag += ' '+s.substring(1)+'="'+obj[s]+'"'),'')
+                                                             : json2xml(s,obj[s]) ).join('')
+                    
+                break;
+                case 'string':
+                    html = '<![CDATA['+obj.toString()+']]>';
+                break;
+                case 'number':
+                case 'boolean':
+                default:
+                    html = obj.toString();
+                break;
+            }
+            return OTag + '>'+ html + CTag;
+        }
+        
+        // console.log( json2xml( 'root xmlns="http://www.w3.org/1999/xhtml"', object ) );
+        // {toXMLString:o=>">"}
+        
+        // console.log( DOC(json2xml( 'root xmlns="http://www.w3.org/1999/xhtml"', object ),'application/xml') );
+        // console.log( Array.from( DOC(json2xml( 'root xmlns="http://www.w3.org/1999/xhtml"', object ),'application/xml').documentElement.children ) );
+        
+        // new XML( 'root', object )
+        // new XML( 'root xmlns="http://www.w3.org/1999/xhtml"', object )
+        // new XML( 'root', 'xmlns="http://www.w3.org/1999/xhtml" my="attr"', object )
+        // new XML( 'root xmlns="http://www.w3.org/1999/xhtml"', 'my="attr"', object )
+        // new XML( 'root', {"@xmlns":"http://www.w3.org/1999/xhtml", "@my":"attr"} )
+        
+        // this.$fields = $( new Document(new XML( 'root xmlns="http://www.w3.org/1999/xhtml"', object ),'application/xml').documentElement.children ) );
+        var $fields = $( DOC( json2xml( 'root xmlns="http://www.w3.org/1999/xhtml"', object ), 'application/xml' ).documentElement.children );
+        // console.log( this.$fields );
+        
+        $(this).append( $fields );
+        
+        return this;
+	}
+    
+    toXMLString()
+    {
+        console.group('Node.toXMLString');
+        // debugger;
+        var xml = '',
+            node = this.cloneNode( true );
+        
+        console.log( 'Clone: %o', node );
+        
+        switch( node.nodeType )
+        {
+            case Node.DOCUMENT_TYPE_NODE:
+                xml = '<!DOCTYPE '+node.name +' PUBLIC "'+ node.publicId +'" "'+ node.systemId+'">';
+            break;
+            case Node.ATTRIBUTE_NODE:
+                xml = ' '+node.name +'="'+node.value+'"';
+            break;
+            case Node.COMMENT_NODE:
+                xml = '<!--'+node.textContent+'-->'
+            break;
+            case Node.DOCUMENT_NODE:
+                xml = node.doctype.toXMLString() + node.documentElement.toXMLString();
+            break;
+            case Node.ELEMENT_NODE:
+                xml = '<'+node.nodeName+ Array.from(node.attributes).map(a=>a.toXMLString()).join('');
+                if( node.childNodes.length )
+                {
+                    xml += '>';
+                    xml += Array.from(node.childNodes).map(a=>a.toXMLString()).join('');
+                    xml += '</'+node.nodeName+'>';
+                }
+                else
+                    xml += '/>';
+                    
+            break;
+            case Node.TEXT_NODE:
+                
+            break;
+            case Node.CDATA_SECTION_NODE:
+            case Node.DOCUMENT_FRAGMENT_NODE:
+            case Node.ENTITY_NODE:
+            case Node.ENTITY_REFERENCE_NODE:
+            case Node.NOTATION_NODE:
+            case Node.PROCESSING_INSTRUCTION_NODE:
+            default:
+            break;
+        }
+        
+        // $(node).children().not( this.$fields ).remove();
+        // content.querySelectorAll('button.mainMenu, watchedFolders').map( n => n.remove() );
+        // console.log( 'After removing UI: %o', node );
+        // xml = node.outerHTML;
+        if( window.vkbeautify )
+            xml = vkbeautify.xml( xml, '\t' );
+        
+        console.log( xml );
+        console.groupEnd();
+        
+        return xml;
+    }
 }
 Object.setPrototypeOf( Natives.Attr.prototype, Node.prototype );
 Object.setPrototypeOf( Natives.Element.prototype, Node.prototype );
 Object.setPrototypeOf( Natives.Document.prototype, Node.prototype );
+Object.setPrototypeOf( CharacterData.prototype, Node.prototype );
+Object.setPrototypeOf( DocumentType.prototype, Node.prototype );
 
 })()
 
-/***********/
-/* jx.core */
-/***********/
-
-Package('jx.core.*');
-
-
-/****************/
-/* jx.core.Node */
-/****************/
-var _Node = Node;
-jx.core.Node = class Node extends _Node {
-	constructor( uri, localName )
-	{
-	    return document.createElementNS.apply( document, arguments );
-	}
-}
 

@@ -182,7 +182,11 @@ window.Element = class Element extends Natives.Element {
 	
 	implementStyle( extendedStyle )
 	{
-	    if( Jilex.options.implementStyles && this.nodeType == 1 && !this.style )
+	    var exists;
+        try{ exists = typeof this.style != 'undefined' }
+        catch( e ){ exists = false }
+        
+        if( Jilex.options.implementStyles && this.nodeType == 1 && !exists )
 	    {
 	        // TODO: go up in parentNodes to find shadowRoot or document
 	        var _impl = ( this.parentNode.styleSheets || this.ownerDocument.styleSheets )._styleImpl,
@@ -502,31 +506,31 @@ window.Element = class Element extends Natives.Element {
 		}
 	}
 	
-	merge( node )
-	{
-		// MUST DO:
-		//! move styles to head
-		//! execute scripts
-		// extends this with firstChild
-		// save children, append class's children and reappend saved ones
+	// merge( node )
+	// {
+	// 	// MUST DO:
+	// 	//! move styles to head
+	// 	//! execute scripts
+	// 	// extends this with firstChild
+	// 	// save children, append class's children and reappend saved ones
 		
-		[].slice.call( _target.document.querySelectorAll('style') )
-			.map(function( s )
-			{
-				document.head.appendChild( s );
-			});
-		[].slice.call( _target.document.querySelectorAll('script') )
-			.map(function( s )
-			{
-				eval( s.innerHTML );
-				document.head.appendChild( s );
-			});
+	// 	[].slice.call( _target.document.querySelectorAll('style') )
+	// 		.map(function( s )
+	// 		{
+	// 			document.head.appendChild( s );
+	// 		});
+	// 	[].slice.call( _target.document.querySelectorAll('script') )
+	// 		.map(function( s )
+	// 		{
+	// 			eval( s.innerHTML );
+	// 			document.head.appendChild( s );
+	// 		});
 		
-		if( this.nodeType == 1 )
-		{
+	// 	if( this.nodeType == 1 )
+	// 	{
 			
-		}
-	}
+	// 	}
+	// }
 	
 	fixForShadowRoot()
 	{
@@ -567,18 +571,19 @@ window.Element = class Element extends Natives.Element {
 Object.setPrototypeOf( HTMLElement.prototype, Element.prototype );
 Object.setPrototypeOf( SVGElement.prototype, Element.prototype );
 
-window.HTMLElement = class HTMLElement extends window.HTMLElement {
+html.Element = class HTMLElement extends window.HTMLElement {
 	static get namespaceURI()
 	{
 		return 'http://www.w3.org/1999/xhtml';
 	}
 	constructor( localName )
 	{
-		var uri = HTMLElement.namespaceURI,
+		var uri = html.Element.namespaceURI,
 			prefix = document.lookupPrefix( uri );
 		prefix = prefix ? prefix+':' : '';
+		localName = localName || 'Element';
 		var node = new Node( uri, prefix + localName.split(':').pop() );
-		Object.setPrototypeOf( node, jx.core.Element.prototype );
+		// Object.setPrototypeOf( node, jx.core.Element.prototype );
 		return node;
 	}
 	

@@ -2,7 +2,15 @@
 /* Document */
 /************/
 
-window.DOC = ( str, type ) => new DOMParser().parseFromString( str, type || 'text/html' );
+// TODO: Reimplement with other syntax: new Document() or $() something less from hell !
+window.DOC = ( str, type ) => 
+                (DOC._errors = (
+                    DOC._current = new DOMParser()
+                                    .parseFromString( str, type || 'text/html' )
+                    )
+                    .$('parsererror div')
+                ).length ? DOC._errors.map( n => console.error('Parser Error: '+n.textContent) ) 
+                         : DOC._current;
 
 /**
  * xmlns
