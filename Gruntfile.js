@@ -59,6 +59,7 @@ module.exports = function(grunt) {
 					'src/jx/core/Node.js',
 					'src/jx/core/Document.js',
 					'src/jx/core/Attr.js',
+					'src/jx/core/Binding.js',
 					'src/jx/core/XmlnsAttr.js',
 					'src/jx/core/Element.js',
 					// 'src/jx/core/Namespace.js',

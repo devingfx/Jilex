@@ -125,7 +125,7 @@ window.Element = class Element extends Natives.Element {
 	Element()
 	{
 		// this.extends();
-		console.log('Element(%o)', this);
+		// console.log('Element(%o)', this);
 		// Set attributes has properties
 		var _ownerElement = this;
 		for(var i = 0, _attr; _attr = this.attributes[i]; i++)
@@ -138,9 +138,9 @@ window.Element = class Element extends Natives.Element {
 			if( _attr.isXmlns )
 				this.attributes[i].extends( XmlnsAttr );
 			else if( Element.avoidAttribute.indexOf( _attr.name ) == -1 )
-				this.attributes[i].extends( jx.core.Binding ).Binding( _ownerElement );
+				this.attributes[i].extends( jx.core.Binding, _ownerElement );
 				// !_attr._initialized && _attr.initialize();
-			console.log(_attr.constructor);
+			// console.log(_attr.constructor);
 			_ownerElement.attributes[_attr.name] = _attr;
 		}
 		// );
@@ -315,6 +315,7 @@ window.Element = class Element extends Natives.Element {
 				.map(function( attr )
 				{
 					var prefix = attr.name && attr.name.split(':')[1] || null;
+					 _xmlns[prefix] = attr;
 					 //_xmlns[prefix] = attr.extends( XmlnsAttr );
 					 //_xmlns[prefix] = attr.initialize();
 				})
