@@ -151,13 +151,13 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 	root = root || this.documentElement || this;
 	
 	[root]
-		.concat( Array.from(root.querySelectorAll('*')) )
+		.concat( root.$('*') )
 		.map( node => {
 			// Custom namespace nodes are parsed as Natives.Element, but not our overrided Element,
 			// and Natives.Element is super of overrided Element. Conversely, HTMLElement is child 
 			// class of overrided Element, so no need of explicitly extend overrided Element.
 			if( node.constructor == Natives.Element )
-				node.extends( Element );
+				Object.setPrototypeOf( node, Element.prototype )
 			
 			// if( Jilex.avoidNs.indexOf(node.namespaceURI) == -1
 			//  || Jilex.avoidNames.indexOf(node.nodeName) == -1 )
@@ -167,7 +167,9 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 				// 	// Set attributes has properties (ak:executeBindings)
 					
 				// })
-			node[node.constructor.name] && node[node.constructor.name]();
+			
+			// node[node.constructor.name] && node[node.constructor.name]();
+			
 			// load dependency
 			/*!node.Class
 			 && * /Jilex.loadComponent( node )
@@ -311,5 +313,3 @@ like DOMParser or XMLDocument classes ...
 
 
 */
-
-

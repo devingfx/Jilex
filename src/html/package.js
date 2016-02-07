@@ -49,6 +49,7 @@ Natives.EventTarget = EventTarget;
 Natives.Node = Node;
 Natives.Attr = Attr;
 Natives.Element = Element;
+Natives.HTMLElement = HTMLElement;
 Natives.Document = Document;
 
 Package('xml.*');
@@ -62,6 +63,34 @@ delete window._xhtmlNS;
 html.Document = HTMLDocument;
 html.Element = HTMLElement;
 
+
+html.Element = class HTMLElement extends Natives.HTMLElement {
+	static get namespaceURI()
+	{
+		return 'http://www.w3.org/1999/xhtml';
+	}
+	constructor( localName )
+	{
+		var uri = html.Element.namespaceURI,
+			prefix = document.lookupPrefix( uri );
+		prefix = prefix ? prefix+':' : '';
+		return new Node( uri, prefix + localName.split(':').pop() ).extends();
+		// Object.setPrototypeOf( node, jx.core.Element.prototype );
+		// return node;
+	}
+	HTMLElement()
+	{
+		console.log(this);
+		this.Element();
+	}
+	
+	get isHTMLElement(){return true}
+}
+// Handy shortcut: var DOM = tag => new HTMLElement( tag )
+
+// Object.setPrototypeOf( HTMLDivElement.prototype, HTMLElement.prototype );
+
+
 Object.getOwnPropertyNames( window )
 	.filter(function(n)
 	{
@@ -70,9 +99,27 @@ Object.getOwnPropertyNames( window )
 	.map(function(n)
 	{
 	    var name = /HTML(.*?)Element/.exec(n)[1];
-	    html[name] = html[name.toLowerCase()] = window[n];
+	    if( !name ) return;
+	    
+	    var klass = html[name] = window[n];
+	    Object.defineProperty( html, name.toLowerCase(), {get: function(){ return klass }} );
+	    
+	    var cl = eval( `(class HTML${name} extends html.Element {
+	    	constructor()
+	    	{
+	    		super()
+	    	}
+	    	HTML${name}()
+	    	{
+	    		this.HTMLElement();
+	    	}
+	    })` );
+	    
+	    html[name].prototype[html[name].name] = function(){ this.HTMLElement(); }
+	    Object.setPrototypeOf( html[name].prototype, html.Element.prototype );
 	});
 
+// html.Body.prototype[html.Body.name] = function(){this.Element();console.log(this);}
 
 Package('SVG.*');
 Object.getOwnPropertyNames( window )

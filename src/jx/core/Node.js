@@ -192,7 +192,7 @@ window.Node = class Node extends Natives.Node {
 	// Node.prototype.setAttributeNS() >         ''
 	
 	
-	extends( Class )
+	extends( Class, ...rest )
 	{
 		Class = Class || this.Class;
 		// TODO: should check if not already extended
@@ -204,7 +204,9 @@ window.Node = class Node extends Natives.Node {
 			Object.setPrototypeOf( this, Class.prototype )
 			// && this.initialize
 			// && this.initialize();
-		
+		// TODO: try{ this.constructor.call( this, ...rest ) }
+		this[this.constructor.name] && this[this.constructor.name]( ...rest );
+		// ( this[this.constructor.name] || o => {} ) ();
 		return this;
 	}
 	

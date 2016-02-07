@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
 	  xmlns:type="https://github.com/Microsoft/TypeScript"
@@ -51,11 +50,22 @@
 	</less:Style>
 	
 	
-	<THREE:WebGLRenderer>
-		<THREE:Scene>
-			<THREE:AmbientLight intensity="0.3"/>
-			<THREE:Sphere radius="45"/>
-		</THREE:Scene>
-	</THREE:WebGLRenderer>
-
+	<THREE:Project antialias="true" shadows="true">
+		<THREE:WebGLRenderer antialias="true" shadows="true">
+			<THREE:Scene>
+				<THREE:PerspectiveCamera uuid="EFEC4860-3121-4BE7-94F5-3EA6CAFCD757"
+										name="Camera"
+										matrix="[0.8496905565261841,-5.802808455968034e-9,-0.5272817015647888,0,-0.23636826872825623,0.8938946723937988,-0.38089677691459656,0,0.4713342785835266,0.4482770562171936,0.7595338225364685,0,214.2072296142578,203.72842407226562,345.1852722167969,1]"
+										zoom="1"
+										fov="50"
+										aspect="2.4007029876977155"
+										near="1"
+										far="100000"/>
+				<THREE:AmbientLight intensity="0.3"/>
+				<THREE:Sphere radius="45"/>
+			</THREE:Scene>
+		</THREE:WebGLRenderer>
+	</THREE:Project>
+	
+	
 </html>

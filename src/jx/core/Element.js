@@ -571,28 +571,6 @@ window.Element = class Element extends Natives.Element {
 Object.setPrototypeOf( HTMLElement.prototype, Element.prototype );
 Object.setPrototypeOf( SVGElement.prototype, Element.prototype );
 
-html.Element = class HTMLElement extends window.HTMLElement {
-	static get namespaceURI()
-	{
-		return 'http://www.w3.org/1999/xhtml';
-	}
-	constructor( localName )
-	{
-		var uri = html.Element.namespaceURI,
-			prefix = document.lookupPrefix( uri );
-		prefix = prefix ? prefix+':' : '';
-		localName = localName || 'Element';
-		var node = new Node( uri, prefix + localName.split(':').pop() );
-		// Object.setPrototypeOf( node, jx.core.Element.prototype );
-		return node;
-	}
-	
-	get isHTMLElement(){return true}
-}
-// Handy shortcut: var DOM = tag => new HTMLElement( tag )
-
-// Object.setPrototypeOf( HTMLDivElement.prototype, HTMLElement.prototype );
-
 
 /*******************/
 /* jx.core.Element */
