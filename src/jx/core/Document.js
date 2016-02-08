@@ -40,10 +40,12 @@ Object.defineProperty( Document.prototype, 'xmlns', {
  * @exemple document.xmlns.filter([].filter.ns.URI("http://ns.exemple.com"))
  * @exemple document.xmlns.filter([].filter.ns.prefix('foo'))
  */
-Package('jx.ArrayUtil');
-jx.ArrayUtil.filters = {
-	URIs: uri => xmlns => xmlns.value == uri,
-	prefix: _prefix => xmlns => xmlns.name.split(':').pop() == _prefix
+var jx = jx || {};
+jx.ArrayUtil = {
+	filters: {
+		URIs: uri => xmlns => xmlns.value == uri,
+		prefix: _prefix => xmlns => xmlns.name.split(':').pop() == _prefix
+	}
 };
 
 /**
@@ -107,7 +109,7 @@ Document.prototype._createStyleImpl = ShadowRoot.prototype._createStyleImpl = fu
 {
 	var _impl;
 	// _globalStyle = this.styleSheets._globalStyle = this.createElementNS( 'http://www.w3.org/1999/xhtml', 'style' );
-	_impl = this.styleSheets._styleImpl = new Element( 'style' ).extends( html.Style );
+	_impl = this.styleSheets._styleImpl = new html.Style;
 	// WebKit hack :(
 	_impl.type = 'text/css';
 	_impl.appendChild( document.createTextNode("") );
@@ -153,11 +155,6 @@ Document.prototype.preinitialize = ShadowRoot.prototype.preinitialize = function
 	[root]
 		.concat( root.$('*') )
 		.map( node => {
-			// Custom namespace nodes are parsed as Natives.Element, but not our overrided Element,
-			// and Natives.Element is super of overrided Element. Conversely, HTMLElement is child 
-			// class of overrided Element, so no need of explicitly extend overrided Element.
-			if( node.constructor == Natives.Element )
-				Object.setPrototypeOf( node, Element.prototype )
 			
 			// if( Jilex.avoidNs.indexOf(node.namespaceURI) == -1
 			//  || Jilex.avoidNames.indexOf(node.nodeName) == -1 )

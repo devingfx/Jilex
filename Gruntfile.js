@@ -48,21 +48,26 @@ module.exports = function(grunt) {
 					// footer: '\n\n\n\n<%= concat.jilexClasses.bootstrap %>'
 				},
 				src: [
-					'src/jx/util/Array.create.js',
+					
+					'src/jx/console/console.tag.js',
+					// 'src/jx/util/Array.create.js',
 					
 					'src/jx/Package.js',
-					'src/jx/package.js',
-					'src/html/package.js',
 					
 					'src/jx/core/EventDispatcher.js',
 					'src/jx/core/Loadable.js',
-					'src/jx/core/Node.js',
 					'src/jx/core/Document.js',
+					'src/jx/core/Node.js',
 					'src/jx/core/Attr.js',
 					'src/jx/core/XmlnsAttr.js',
 					'src/jx/core/Element.js',
 					// 'src/jx/core/Namespace.js',
+					
 					'src/jx/core/Jilex.js',
+					
+					// 'src/jx/package.js',
+					'src/html/package.js',
+					
 				],
 				dest: 'dist/jilex-classes.src.js',
 			}

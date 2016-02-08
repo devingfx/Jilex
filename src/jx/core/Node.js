@@ -194,6 +194,12 @@ window.Node = class Node extends Natives.Node {
 	
 	extends( Class, ...rest )
 	{
+		// Custom namespace nodes are parsed as Natives.Element, but not our overrided Element,
+		// and Natives.Element is super of overrided Element. Conversely, HTMLElement is child 
+		// class of overrided Element, so no need of explicitly extend overrided Element.
+		if( this.constructor == Natives.Element )
+			Object.setPrototypeOf( this, Element.prototype )
+		
 		Class = Class || this.Class;
 		// TODO: should check if not already extended
 		// TODO: should check class compatibility?

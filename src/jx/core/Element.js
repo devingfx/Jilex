@@ -26,9 +26,9 @@ Aze
 
 
 
-/*******************/
-/* Element         */
-/*******************/
+/*************************************/
+/* Element/Document.querySelectorAll */
+/*************************************/
 
 var _qsa = Element.prototype.querySelectorAll,
 	_matches = Element.prototype.matches,
@@ -112,6 +112,10 @@ Element.prototype.matches = function matches( selectors )
 		return _matches.call( this, selectors )
 };
 
+/*******************/
+/* Element         */
+/*******************/
+
 /**
  * Element
  */
@@ -124,7 +128,7 @@ window.Element = class Element extends Natives.Element {
 	
 	Element()
 	{
-		this.extends()
+		// this.extends()
 	}
 	// inheritance test
 	// get children()
@@ -189,7 +193,7 @@ window.Element = class Element extends Natives.Element {
         if( Jilex.options.implementStyles && this.nodeType == 1 && !exists )
 	    {
 	        // TODO: go up in parentNodes to find shadowRoot or document
-	        var _impl = ( this.parentNode.styleSheets || this.ownerDocument.styleSheets )._styleImpl,
+	        var _impl = ( (this.parentNode && this.parentNode.styleSheets) || this.ownerDocument.styleSheets )._styleImpl,
 	        	_rule, _style, 
 	        	_this = this;
 	        
@@ -575,7 +579,7 @@ Object.setPrototypeOf( SVGElement.prototype, Element.prototype );
 /*******************/
 /* jx.core.Element */
 /*******************/
-
+Package('jx.core.*');
 /**
  * jx.core.Element
  * All jx.core.Element have jx namespaceURI.
@@ -667,7 +671,7 @@ jx.Carousel = class Carousel extends Element {
 	get isCarousel(){return true}
 }
 
-
+/*
 jx.Input = class Input extends html.Input
 {
 	constructor()

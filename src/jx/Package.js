@@ -25,9 +25,27 @@ function Package( QName )
 	}
 	return tar;
 }
+
+/**
+ * aliases
+ */
 Package.aliases = {
 	"http://www.w3.org/1999/xhtml":						"html.*",
 	"http://ns.devingfx.com/jxml/2015":					"jx.*",
 	"http://www.ecma-international.org/ecma-262/6.0/":	"js6.*",
 	"http://ns.adobe.com/mxml/2009":					"mx.*"
+};
+
+/**
+ * Natives.* package
+ * Used to save native classes before extending it.
+ */
+Package('Natives.*');
+window.Natives = {
+	EventTarget: EventTarget,
+	Node: Node,
+	Attr: Attr,
+	Element: Element,
+	HTMLElement: HTMLElement,
+	Document: Document
 };

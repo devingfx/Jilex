@@ -1,7 +1,7 @@
 /**
  * Jilex
  */
-var Jilex = class Jilex {
+var Jilex = class Jilex extends HTMLScriptElement {
 	
 	get xhtmlNS(){ return 'http://www.w3.org/1999/xhtml' }
 	get jxNS(){ return 'http://ns.devingfx.com/jxml/2015' }
@@ -40,21 +40,26 @@ var Jilex = class Jilex {
 			this.options = options;
 		
 	    this._uids = {};
-	    
-	    if( this.options.implementStyles )
-	    	document._createStyleImpl();
-	    
+	}
+	
+	Jilex()
+	{
+		// this.Element();
+		this.options = {};
+		Array.from( this.attributes )
+			.map( att => this.options[att.name] = att.value == 'true' );
+		
 	    document.addEventListener( 'DOMContentLoaded', e => document.preinitialize() );
 	    window.addEventListener( 'load', e => document.initialize() );
 	    
 		// this.initialize();
 	}
-	
-	// initialize()
-	// {
-		
-	// 	return this;
-	// }
+    
+    boot()
+    {
+    	if( this.options.implementStyles )
+	    	document._createStyleImpl();	
+    }
     
     getUniqueId( node )
     {
@@ -253,8 +258,10 @@ var Jilex = class Jilex {
 	get isJilex(){return true}
 }
 
-
-
+// var ss = document.getElementsByTagName('script'),
+// 	thisScript;
+Jilex = window.Jilex = document.currentScript.extends( Jilex );
+// Jilex = window.Jilex = new Jilex( ss[ss.length - 1].attributes );
 
 
 

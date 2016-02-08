@@ -44,13 +44,7 @@ function getClassInheritanceJSON()
 	})
 }
 
-Package('Natives.*');
-Natives.EventTarget = EventTarget;
-Natives.Node = Node;
-Natives.Attr = Attr;
-Natives.Element = Element;
-Natives.HTMLElement = HTMLElement;
-Natives.Document = Document;
+
 
 Package('xml.*');
 xml.Document = XMLDocument;
@@ -63,60 +57,64 @@ delete window._xhtmlNS;
 html.Document = HTMLDocument;
 html.Element = HTMLElement;
 
-
-html.Element = class HTMLElement extends Natives.HTMLElement {
-	static get namespaceURI()
-	{
-		return 'http://www.w3.org/1999/xhtml';
+if( Jilex.options.extendHTMLElements )
+{
+	html.Element = class HTMLElement extends Natives.HTMLElement {
+		static get namespaceURI()
+		{
+			return 'http://www.w3.org/1999/xhtml';
+		}
+		constructor( localName )
+		{
+			var uri = html.Element.namespaceURI,
+				prefix = document.lookupPrefix( uri );
+			prefix = prefix ? prefix+':' : '';
+			return new Node( uri, prefix + localName.split(':').pop() ).extends();
+			// Object.setPrototypeOf( node, jx.core.Element.prototype );
+			// return node;
+		}
+		HTMLElement()
+		{
+			// console.log(this);
+			this.Element();
+		}
+		
+		get isHTMLElement(){return true}
 	}
-	constructor( localName )
-	{
-		var uri = html.Element.namespaceURI,
-			prefix = document.lookupPrefix( uri );
-		prefix = prefix ? prefix+':' : '';
-		return new Node( uri, prefix + localName.split(':').pop() ).extends();
-		// Object.setPrototypeOf( node, jx.core.Element.prototype );
-		// return node;
-	}
-	HTMLElement()
-	{
-		console.log(this);
-		this.Element();
-	}
-	
-	get isHTMLElement(){return true}
+	// Handy shortcut: var DOM = tag => new HTMLElement( tag )
 }
-// Handy shortcut: var DOM = tag => new HTMLElement( tag )
-
-// Object.setPrototypeOf( HTMLDivElement.prototype, HTMLElement.prototype );
+// Object.setPrototypeOf( HTMLDivElement.prototype, html.Element.prototype );
 
 
 Object.getOwnPropertyNames( window )
-	.filter(function(n)
+	.filter( n => /HTML(.*?)Element/.test(n) )
+	.map( n =>
 	{
-		return /HTML(.*?)Element/.test(n)
-	})
-	.map(function(n)
-	{
-	    var name = /HTML(.*?)Element/.exec(n)[1];
+	    var klass, name = /HTML(.*?)Element/.exec(n)[1];
 	    if( !name ) return;
+	    Object.setPrototypeOf( window[n].prototype, html.Element.prototype );
 	    
-	    var klass = html[name] = window[n];
+	    if( Jilex.options.extendHTMLElements )
+	    {
+		    klass = html[name] = eval( `(class ${name} extends ${n} {
+		    	constructor()
+		    	{
+		    		return new Node('${name.toLowerCase()}').extends()
+		    	}
+		    	${name}()
+		    	{
+		    		this.HTMLElement();
+		    	}
+		    })` );
+		    
+	    }
+	    else
+	    {
+	    	klass = html[name] = window[n];
+	    	// html[name].prototype[html[name].name] = function(){ this.HTMLElement(); }
+	    	// Object.setPrototypeOf( html[name].prototype, html.Element.prototype );
+	    }
 	    Object.defineProperty( html, name.toLowerCase(), {get: function(){ return klass }} );
-	    
-	    var cl = eval( `(class HTML${name} extends html.Element {
-	    	constructor()
-	    	{
-	    		super()
-	    	}
-	    	HTML${name}()
-	    	{
-	    		this.HTMLElement();
-	    	}
-	    })` );
-	    
-	    html[name].prototype[html[name].name] = function(){ this.HTMLElement(); }
-	    Object.setPrototypeOf( html[name].prototype, html.Element.prototype );
 	});
 
 // html.Body.prototype[html.Body.name] = function(){this.Element();console.log(this);}
