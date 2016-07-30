@@ -21,7 +21,7 @@ Really early stage of a try to port Flex framework to Javascript and xHTML.
     
 </html>
 ```
-@see [Default namespaces](https://github.com/devingfx/Jilex/wiki/Namespaces)
+@see [Namespaces](https://github.com/devingfx/Jilex/wiki/Namespaces)
 
 
 ### Attribute bindings
@@ -32,7 +32,7 @@ Really early stage of a try to port Flex framework to Javascript and xHTML.
 <jx:Panel width="130px" resizable="true"> ...stuff... </jx:Panel>
 <jx:Button label="OK" width="{window.innerWidth - panel.width}" bottom="0"/>
 ```
-@see [Default namespaces](https://github.com/devingfx/Jilex/wiki/Bindings)
+@see [Bindings](https://github.com/devingfx/Jilex/wiki/Bindings)
 
 ### Comprehensible classes
 
@@ -56,7 +56,7 @@ jx.Button = class Button extends html.Button
 	get isButton(){return true}
 }
 ```
-@see [Default namespaces](https://github.com/devingfx/Jilex/wiki/ES6-Classes)
+@see [ES6 Classes](https://github.com/devingfx/Jilex/wiki/ES6-Classes)
 
 ### HTML Components
 
@@ -90,7 +90,11 @@ in another document:
 </myLib:Carousel>
 ```
 
-@see [Default namespaces](https://github.com/devingfx/Jilex/wiki/HTML-Components)
+@see [Write a component with xHTML](https://github.com/devingfx/Jilex/wiki/HTML-Components)
+
+
+### Easy debugging
+
 
 
 
