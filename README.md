@@ -3,8 +3,101 @@ Flex way Javascript
 
 Really early stage of a try to port Flex framework to Javascript and xHTML.
 
+## Teaser
+
+### Namespaces
+
+```xml
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:jx="http://ns.devingfx.com/jxml/2015"
+      xmlns:local="*">
+    
+    <jx:Element/>
+    <jx:Editor/>
+    
+    <local:MyComp text="Coucou"/>
+    <local:MySuperComp/>
+    <local:Button>Coucou</local:Button>
+    
+</html>
+```
+@see [Default namespaces](https://github.com/devingfx/Jilex/wiki/Namespaces)
+
+
+### Attribute bindings
+
+```xhtml
+<title inneText="{myBlog.currentArticle.title}"></title>
+
+<jx:Panel width="130px" resizable="true"> ...stuff... </jx:Panel>
+<jx:Button label="OK" width="{window.innerWidth - panel.width}" bottom="0"/>
+```
+@see [Default namespaces](https://github.com/devingfx/Jilex/wiki/Bindings)
+
+### Comprehensible classes
+
+```es6
+jx.Button = class Button extends html.Button
+{
+	constructor()
+	{
+		return new Element( 'jx:Button' ).extends( jx.Button );
+	}
+	
+	get value()
+	{
+		return super.value.replace(/^jx\s/, '');
+	}
+	set value( v )
+	{
+		super.value = 'jx ' + v;
+	}
+	
+	get isButton(){return true}
+}
+```
+@see [Default namespaces](https://github.com/devingfx/Jilex/wiki/ES6-Classes)
+
+### HTML Components
+
+Carousel.xhtml
+```xml
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:jx="http://ns.devingfx.com/jxml/2015"
+     xmlns="*">
+	<jx:Script><![CDATA[
+		prev()
+		{
+			this.currentPhoto -= this.photoPerPage;
+		}
+		next()
+		{
+			this.currentPhoto += this.photoPerPage;
+		}
+		set currentPhoto(){}
+		get currentPhoto(){}
+	]]></jx:Script>
+	<button id="prev" label="PREV" onclick="this.prev()"/>
+	<button id="next" label="NEXT" onclick="this.next()"/>
+</div>
+```
+in another document:
+```xml
+<myLib:Carousel photoPerPage="3"/>
+	<img src="..."/>
+	<img src="..."/>
+	<img src="..."/><img src="..."/>
+</myLib:Carousel>
+```
+
+@see [Default namespaces](https://github.com/devingfx/Jilex/wiki/HTML-Components)
+
+
+
 
 ## Quick start
+
+### Load
 
 First thing in you need to load Jilex core from your local copy or from github page.
 Jilex and though Flex XML syntaxe is better coherent with xHTML. You can, but it's recomanded to use it in HTML(5) see [Caveats](#caveats).
@@ -30,6 +123,7 @@ Then load packages by specifying xmlns attributes in the document, the root tag 
     
    ...
 ```
+### Use
 
 Instanciate a component just with a tag with the package namspace and the class name:
 
@@ -37,7 +131,9 @@ Instanciate a component just with a tag with the package namspace and the class 
 <jx:Editor title="Coucou monde" onclick="do something" width="{ window.innerWidth / 2 }" />
 ```
 
-or **create your own component** extending HTML tags or existing components with es6 classes.
+### Create
+
+**Create your own component** extending HTML tags or existing components with es6 classes.
 
 ```es6
 my.Button = class Button extends html.Button
@@ -88,123 +184,11 @@ my.Button = class Button extends html.Button
 ```
 
 Because of XML namespace local declaration, the component is loaded automagically, the url come from namespace plus tag name:
-./my/Button.js
-
-
-## Namespaces
-
-XML namespaces are entry point for tags <> classes linking. It defines in the same time a group for tags,
-a global object to put the classes into to be organised and an url entry point to load files from.
-
-In this exemple, there are 2 type of namespaces, local and external. It depends of the notation:
-
-* jx="http://ns.devingfx.com/jxml/2015"
-* js="data.*"
-* local="*"
-
-The local notation is a point syntax tree, that is replaced by folder tree when resolving: ./data/ the asterisk (*) means all
-package in the namespace, it's FLex legacy and ignored here. THe current folder (and window global object) can be assigned to a namespace, here named "local" with just an asterisk.
-
-If this namespace entry point has some grouped code to load, like compiled package, or namespace globals, Jilex try to load 
-a package.js file at this urls:
-
-* http://ns.devingfx.com/jxml/2015/package.js
-* ./data/package.js
-* ./themes/package.js
-* ./package.js
-
-Either the package.js defines all the component classes of the namespace, either Jilex will try to load a component if don't exist yet.
-
-```xml
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:jx="http://ns.devingfx.com/jxml/2015"
-      xmlns:js="data.*"
-      xmlns:gfx="themes.*"
-      xmlns:local="*">
-    
-    <jx:Element/>
-    <jx:Editor/>
-    
-    <local:MyComp text="Coucou"/>
-    <local:MySuperComp/>
-    <local:Button>Coucou</local:Button>
-    
-    <js:Array id="myData">
-        <js:String>Coucou</js:String>
-        <js:String>Monde</js:String>
-        <js:Number>42</js:Number>
-        <js:Boolean>false</js:Boolean>
-        <js:Object>
-            <js:String key="title">Coucou</js:String>
-            <js:Number key="count">42</js:Number>
-            <js:Boolean key="doAnything">false</js:Boolean>
-        </js:Object>
-        <js:json>{"go": { "ahead": "with", "your": "plain", "json": true} }</js:json>
-        <js:RegExp modifier="g">(.*?)@(.*?).(.*?)</js:RegExp>
-    </js:Array>
-    
-    <js:XML source="./datas/catalog.xml"></js:XML>
-    
-    
-    default namespace :
-    <Editor xmlns="http://ns.devingfx.com/jxml/2015">
-        <Button label="Editor"/>
-        <jx:TextInput value="monde"/>
-    </Editor>
-</html>
-```
-
-In the above exemple, all jx components are included in package.js, and Jilex will try to load the rest:
-
-* ./MyComp.js
-* ./MySuperComp.js
-* ./Button.js
-* ./js/Array.js
-* ./js/String.js
-* ./js/Number.js
-* ./js/Boolean.js
-* ./js/Object.js
-* ./js/json.js
-* ./js/RegExp.js
-* ./js/XML.js
+./my/Button.js.
 
 
 
-Jilex create some global namespaces for HTML, XML, SVG classes by default for you to use or extend (see [Default namespaces](https://github.com/devingfx/Jilex/wiki/w3c-ns)).
 
-
-## Attribute bindings
-
-```xhtml
-<title inneText="{myBlog.currentArticle.title}"></title>
-
-<jx:Panel width="130px" resizable="true"> ...stuff... </jx:Panel>
-<jx:Button label="OK" width="{window.innerWidth - panel.width}" bottom="0"/>
-```
-
-
-## Comprehensible classes
-
-```es6
-jx.Button = class Button extends html.Button
-{
-	constructor()
-	{
-		return new Element( 'jx:Button' ).extends( jx.Button );
-	}
-	
-	get value()
-	{
-		return super.value.replace(/^jx\s/, '');
-	}
-	set value( v )
-	{
-		super.value = 'jx ' + v;
-	}
-	
-	get isButton(){return true}
-}
-```
 ## Roadmap (draft)
 
 - [x] Native element heritage
