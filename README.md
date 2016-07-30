@@ -95,9 +95,10 @@ in another document:
 
 ### Easy debugging
 
+![](https://github.com/devingfx/Jilex/raw/master/Screenshot-DevTools.png)
 
 
-
+------------------------------------------------
 
 ## Quick start
 
