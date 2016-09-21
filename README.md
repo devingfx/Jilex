@@ -105,7 +105,7 @@ in another document:
 ### Load
 
 First thing in you need to load Jilex core from your local copy or from github page.
-Jilex and though Flex XML syntaxe is better coherent with xHTML. You can, but it's recomanded to use it in HTML(5) see [Caveats](#caveats).
+Jilex and though Flex XML syntax is more coherent with xHTML. You can, but it's not recomanded, use HTML(5) see [Caveats](#caveats).
 
 _(You can name the lib by specifying an id to the tag)_
 ```html
