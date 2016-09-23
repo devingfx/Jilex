@@ -40,7 +40,7 @@ Object.defineProperty( Document.prototype, 'xmlns', {
  * @exemple document.xmlns.filter([].filter.ns.URI("http://ns.exemple.com"))
  * @exemple document.xmlns.filter([].filter.ns.prefix('foo'))
  */
-var jx = jx || {};
+var jx = Package('jx.*');
 jx.ArrayUtil = {
 	filters: {
 		URIs: uri => xmlns => xmlns.value == uri,

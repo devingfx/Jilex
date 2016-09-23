@@ -43,7 +43,7 @@ module.exports = function(grunt) {
 			jilexClasses: {
 				bootstrap: 'src/bootstrap.js',
 				options: {
-					banner: '"use strict";\n',
+					banner: '"use strict";\n(function(exports,doc){',
 					footer: grunt.file.read( 'src/bootstrap.js' )
 					// footer: '\n\n\n\n<%= concat.jilexClasses.bootstrap %>'
 				},

@@ -26,6 +26,7 @@ function Package( QName )
 	return tar;
 }
 
+exports.Package = Package;
 /**
  * aliases
  */
@@ -41,7 +42,7 @@ Package.aliases = {
  * Used to save native classes before extending it.
  */
 Package('Natives.*');
-window.Natives = {
+exports.Natives = {
 	EventTarget: EventTarget,
 	Node: Node,
 	Attr: Attr,

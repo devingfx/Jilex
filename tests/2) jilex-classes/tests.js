@@ -1,9 +1,21 @@
 "use strict";
 (function(){
-
-
+	/**
+	 * Jilex core tests
+	 * 
+	 * This tests are made to be executed in different documents.
+	 * Tests have to check the document type (HTML or xHTML or XML)
+	 * and Jilex options to adapt the tests made.
+	 * 
+	 * The different document can load packaged version of Jilex but
+	 * may also load individual source files from src folder without
+	 * the bootstrap to be able to test thing before Jilex acts. These
+	 * tests are responsible of bootstraping later when needed.
+	 */
 	
 	var A = Array.from;
+
+	// Native behavior before bootstrap
 	
 	QUnit.test( "Classes presence", function( assert )
 	{
@@ -65,7 +77,7 @@
 		// document.body.children.should.have.lengthOf( 15 );
 		
 		var customElements = A( document.body.children )
-								.filter( (node, i, a) => i < a.length-5 );
+								.filter( (node, i, a) => i < a.length-6 );
 		
 		
 		ok( 'Elements are Element',// not HTMLUnknownElement',
@@ -82,7 +94,7 @@
 												namespaceURI: '*',
 												prefix: 'local',
 												localName: 'MyComp',
-												url: './MyComp.xml'
+												url: './MyComp'
 											})
 		
 		);
@@ -288,10 +300,31 @@
 		// delete div;
 	});
 	
-	QUnit.test( "", function( assert )
+	QUnit.test( "Native namespaced css", function( assert )
 	{
 		var ok = ( s, t ) => assert.ok( t, s );
 		
+		ok('empty test', 1)
+	});
+	
+	
+	// After bootstrap, extensions and shims
+	
+	QUnit.test( "Shim classes", function( assert )
+	{
+		var ok = ( s, t ) => assert.ok( t, s );
+		
+		/* to test
+		Shim class constructors:
+		new Node() 
+		new Element()
+		obj instanceof ...
+		just parsed node inheritance
+		if options.extendHTMLElements or not
+		class tree inheritance
+		*/
+		
+		ok('empty test', 1)
 	});
 	
 	
