@@ -205,7 +205,8 @@ window.Node = class Node extends Natives.Node {
 		// TODO: should check class compatibility?
 		Class
 		&& typeof Class == 'function'
-		&& this.constructor != Class
+		// && this.constructor != Class
+		&& !(this instanceof Class)
 		&&
 			Object.setPrototypeOf( this, Class.prototype )
 			// && this.initialize
@@ -366,6 +367,7 @@ window.Node = class Node extends Natives.Node {
 Object.setPrototypeOf( Natives.Attr.prototype, Node.prototype );
 Object.setPrototypeOf( Natives.Element.prototype, Node.prototype );
 Object.setPrototypeOf( Natives.Document.prototype, Node.prototype );
+Object.setPrototypeOf( DocumentFragment.prototype, Node.prototype );
 Object.setPrototypeOf( CharacterData.prototype, Node.prototype );
 Object.setPrototypeOf( DocumentType.prototype, Node.prototype );
 

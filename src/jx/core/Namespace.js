@@ -31,6 +31,8 @@
 
 Package('jx.*');
 
+Symbol.namespace = Symbol('namespace');
+
 jx.Namespace = class Namespace extends Element {
 	constructor( prefix, URI )
     {

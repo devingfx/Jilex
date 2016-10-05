@@ -58,7 +58,7 @@ var Jilex = class Jilex extends HTMLScriptElement {
     boot()
     {
     	if( this.options.implementStyles )
-	    	document._createStyleImpl();	
+	    	document._createStyleImpl();
     }
     
     getUniqueId( node )
@@ -255,18 +255,40 @@ var Jilex = class Jilex extends HTMLScriptElement {
 		
 	}
 	
-	get isJilex(){return true}
+	get Class() { return Jilex }
+	get isJilex() { return true }
 }
 
 // var ss = document.getElementsByTagName('script'),
 // 	thisScript;
-Jilex = window.Jilex = document.currentScript.extends( Jilex );
+Jilex = window[document.currentScript.id || 'Jilex'] = document.currentScript.extends( Jilex );
+document.currentScript.remove();
 // Jilex = window.Jilex = new Jilex( ss[ss.length - 1].attributes );
 
+// Jilex.parserErrors = document.$('parsererror')
+// 									.map( err => {
+// 												err.remove();
+// 												err.$('div')
+// 														.map( t => t.innerText )
+// 															.join()
+// 									})
+// 									.join()
+// 									.split(/\n/)
+// 										.filter( s => s != '' )
 
-
-
-	
+Jilex.catchParserError = function( root = document )
+{
+    return root.$('parsererror')
+                    .map( n => (
+                        n.remove(),
+                        n.$('div')[0]
+                            .textContent.trim()
+                                .split('\n')
+                                    .map( s => /line\s(\d{1,10})\sat\scolumn\s(\d{1,10}):(.*)/.exec(s) )
+                                    .map( a => `<parsererror line="${a[1]}" column="${a[2]}">${a[3]}</parsererror>` )
+                    ))
+}
+Jilex.parserErrors = Jilex.catchParserError();
 	
     
   //  function loadManifest( _xmlns )

@@ -129,6 +129,7 @@ window.Element = class Element extends Natives.Element {
 	Element()
 	{
 		// this.extends()
+		this._implementStyle();
 	}
 	// inheritance test
 	// get children()
@@ -184,7 +185,7 @@ window.Element = class Element extends Natives.Element {
         ctx[this.id] = force ? this : ctx[this.id] || this;
     }
 	
-	implementStyle( extendedStyle )
+	implementStyle()
 	{
 	    var exists;
         try{ exists = typeof this.style != 'undefined' }
@@ -238,16 +239,16 @@ window.Element = class Element extends Natives.Element {
 		        				_rule.selectorText = '[*|id="' + v + '"]';
 							// this.id = v;
 							this.setAttributeNS( Jilex.jxNS, 'jx:id', v );
-							Object.getNotifier( this ).notify({
-								type: 'update',
-								name: 'jx::id',
-								oldValue: _old
-							});
-							Object.getNotifier( this ).notify({
-								type: 'update',
-								name: '	id',
-								oldValue: _old
-							});
+				// 			Object.getNotifier( this ).notify({
+				// 				type: 'update',
+				// 				name: 'jx::id',
+				// 				oldValue: _old
+				// 			});
+				// 			Object.getNotifier( this ).notify({
+				// 				type: 'update',
+				// 				name: '	id',
+				// 				oldValue: _old
+				// 			});
 		        		}
 		        	})
 		    		.bind( this )
@@ -271,43 +272,53 @@ window.Element = class Element extends Natives.Element {
 	 * @return {Object} An object with keys corresponding to xmlns prefixes. For duplicate prefix,
 	 * closest parent's prefix get rid of more far ancestors. 
 	 */
-	get xmlns()
-	{
-			var _xmlns = {}, node = this;
-			var list = 
-			[].slice.call( this.attributes && this.attributes.length ? this.attributes : [] )
-		list = list
-				.filter(function( attr )
-				{
-					return /^xmlns\:?/.test( attr.name )
-				})
-	     list = list
-				.concat( 
-					(function( o )
-					{
-						var a = [];
-						for( var n in o )
-							a.push( o[n] );
-						return a;
-					})
-					(
-						this.parentNode && this.parentNode != this.ownerDocument ? 
-							this.parentNode.xmlns : 
-								this.ownerDocument && this.parentNode != this.ownerDocument ? 
-									this.ownerDocument.documentElement.xmlns : 
-							{}
-					)
-				)
-	     list = list
-				.reverse()
-	     list = list
-				.map(function( attr )
-				{
-					var prefix = attr.name && attr.name.split(':')[1] || null;
-					 _xmlns[prefix] = attr.initialize();
-				})
-			return _xmlns;
-		}
+	// get xmlns()
+	// {
+	// 		// var _xmlns = {}, node = this;
+			
+			
+	// 		var _xmlns = this.parentNode && this.parentNode.xmlns || {};
+			
+	// 		for( let attr of this.attributes )
+	// 			attr.namespaceURI == "http://www.w3.org/2000/xmlns/"
+	// 				&& _xmlns[attr.localName] = attr;
+				
+	// 		var list = 
+	// 		Array.from( this.attributes )
+	// 		// [].slice.call( this.attributes && this.attributes.length ? this.attributes : [] )
+	// 	// list = list
+	// 			.filter(function( attr )
+	// 			{
+	// 				// return /^xmlns\:?/.test( attr.name )
+	// 				return attr.namespaceURI == "http://www.w3.org/2000/xmlns/"
+	// 			})
+	//      //list = list
+	// 			.concat(
+	// 				(function( o )
+	// 				{
+	// 					var a = [];
+	// 					for( var n in o )
+	// 						a.push( o[n] );
+	// 					return a;
+	// 				})
+	// 				(
+	// 					this.parentNode && this.parentNode != this.ownerDocument ? 
+	// 						this.parentNode.xmlns : 
+	// 							this.ownerDocument && this.parentNode != this.ownerDocument ? 
+	// 								this.ownerDocument.documentElement.xmlns : 
+	// 						{}
+	// 				)
+	// 			)
+	//      list = list
+	// 			.reverse()
+	//      list = list
+	// 			.map(function( attr )
+	// 			{
+	// 				var prefix = attr.name && attr.name.split(':')[1] || null;
+	// 				 _xmlns[prefix] = attr.initialize();
+	// 			})
+	// 		return _xmlns;
+	// 	}
 	
 	/**
 	 * namespace
@@ -315,11 +326,12 @@ window.Element = class Element extends Natives.Element {
 	 */
 	get namespace()
 	{
+		return Package( this.namespaceURI );
 		// return this.xmlns[this.prefix];
-		if( this.nodeType == 1 || this.nodeType == 2)
-			return this.xmlns[ this.prefix ];
-		else
-			return null;
+		// if( this.nodeType == 1 || this.nodeType == 2)
+			// return this.xmlns[ this.prefix ];
+		// else
+			// return null;
 	}
 	
 	/**
@@ -327,12 +339,20 @@ window.Element = class Element extends Natives.Element {
 	 */
 	get Class()
 	{
+		/*TODO check namespace aliases
+		var path = this.namespaceURI, klass = this.localName;
+            if( path == 'http://www.w3.org/1999/xhtml' )
+                return window[`HTML${klass[0].toUpperCase()+klass.substring(1).toLowerCase()}Element`];
+            else
+                return this.namespace[this.localName] || 
+                       this.namespace[Symbol.namespace][this.localName]
+		*/
 		var _ns = this.namespace;
 		if( this.nodeType == 1 && _ns )
 		{
 			// var klass = new Function( '', 'try{return '+_ns.document.querySelector('#'+this.localName).className+';}catch(e){}' )();
-			// var klass = this.namespace.package[this.localName];
-			var klass = Package( this.lookupNamespaceURI(this.prefix) )[this.localName];
+			var klass = this.namespace[this.localName];
+			// var klass = Package( this.lookupNamespaceURI(this.prefix) )[this.localName];
 			if( klass )
 				return klass;
 			// else
@@ -579,7 +599,8 @@ Object.setPrototypeOf( SVGElement.prototype, Element.prototype );
 /*******************/
 /* jx.core.Element */
 /*******************/
-Package('jx.core.*');
+var jx = window.jx || Package('jx.*');
+jx.core = Package('jx.core.*');
 /**
  * jx.core.Element
  * All jx.core.Element have jx namespaceURI.
