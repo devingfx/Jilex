@@ -704,7 +704,7 @@ like DOMParser or XMLDocument classes ...
 
 */
 
-class Document extends Natives.Document {
+window.Document = class Document extends Natives.Document {
 	constructor( src, type )
 	{
 		var _current = new DOMParser()
