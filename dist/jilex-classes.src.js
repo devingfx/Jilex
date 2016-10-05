@@ -1,5 +1,5 @@
 "use strict";
-Package('jx').color = '#236E25';
+(function(exports,doc){Package('jx').color = '#236E25';
 Package('ak').color = '#4898ac';
 
 
@@ -91,6 +91,7 @@ function Package( QName )
 	return tar;
 }
 
+exports.Package = Package;
 /**
  * aliases
  */
@@ -106,7 +107,7 @@ Package.aliases = {
  * Used to save native classes before extending it.
  */
 Package('Natives.*');
-window.Natives = {
+exports.Natives = {
 	EventTarget: EventTarget,
 	Node: Node,
 	Attr: Attr,
@@ -432,7 +433,7 @@ Object.defineProperty( Document.prototype, 'xmlns', {
  * @exemple document.xmlns.filter([].filter.ns.URI("http://ns.exemple.com"))
  * @exemple document.xmlns.filter([].filter.ns.prefix('foo'))
  */
-var jx = jx || {};
+var jx = Package('jx.*');
 jx.ArrayUtil = {
 	filters: {
 		URIs: uri => xmlns => xmlns.value == uri,
@@ -701,7 +702,262 @@ Must verify Document creation methods to check if created document is well overr
 like DOMParser or XMLDocument classes ...
 
 
-*/;
+*/
+
+class Document extends Natives.Document {
+	constructor( src, type )
+	{
+		var _current = new DOMParser()
+							.parseFromString( str, type || 'text/html' )
+		  , _errors = _current.$('parsererror div')
+		  ;
+	
+		_errors.map( n => console.error('Parser Error: ' + n.textContent) );
+		
+		return _current.extends( Document );
+	}
+	Document()
+	{
+		this.addEventListener('DOMContentLoaded', e => this.preinitialize() );
+	}
+	
+	/**
+	 * _createStyleImpl
+	 * HTMLElement does implement .style but not Element. This method creates an html <style> node 
+	 * in the document to host future Element's .style declaration.
+	 * @see Element.style
+	 */
+	_createStyleImpl()
+	{
+		var _impl;
+		// _globalStyle = this.styleSheets._globalStyle = this.createElementNS( 'http://www.w3.org/1999/xhtml', 'style' );
+		_impl = this.styleSheets._styleImpl = new html.Style;
+		// WebKit hack :(
+		_impl.type = 'text/css';
+		_impl.appendChild( document.createTextNode("") );
+		(this.head || this.documentElement || this).appendChild( _impl );
+	}
+	
+	/**
+	 * preinitialize
+	 * Loops on nodes to extend it with appropriate class.
+	 * @param {Element} root Optional: The node from witch loop on all children, otherwise the Document.
+	 */
+	preinitialize( root )
+	{
+		if( this._preinitialized ) return;
+		this._preinitialized = true;
+		
+		
+		// Resolve last local scripts
+		// localScript();
+	
+		// Define bindings
+		// bindings( document.body, true );
+		
+		// (Very) simple responsive helper
+		// if( /mobile/i.test(navigator.userAgent) )
+		// 	document.documentElement.classList.add('mobile');
+		// else
+		// 	document.documentElement.classList.add('desktop');
+		
+		
+		
+		root = root || this.documentElement || this;
+		
+		[root]
+			.concat( root.$('*') )
+			.map( node => {
+				
+				// if( Jilex.avoidNs.indexOf(node.namespaceURI) == -1
+				//  || Jilex.avoidNames.indexOf(node.nodeName) == -1 )
+				node.extends();
+				node.id && node.addToContext( window );
+					// .then( node => {
+					// 	// Set attributes has properties (ak:executeBindings)
+						
+					// })
+				
+				// node[node.constructor.name] && node[node.constructor.name]();
+				
+				// load dependency
+				/*!node.Class
+				 && * /Jilex.loadComponent( node )
+				 		.catch( e => console.log(e) )
+				 		.then( doc => node.Class
+										 && node.constructor != node.Class
+										 && node.extends().initialize()
+				 		)*/
+				
+				
+			})
+		
+		
+		
+		root.dispatchEvent( new Event('preinitialize') );
+		return this;
+	}
+	
+	
+	
+	get isHtml5()
+	{
+		return document.doctype.name == "html"
+				&& document.doctype.systemId == "" 
+				&& document.doctype.publicId == ""
+	}	
+	
+	
+	/**
+	 * initialize
+	 * Loops on nodes to extend it with appropriate class.
+	 * @param {Element} root Optional: The node from witch loop on all children, otherwise the Document.
+	 */
+	initialize( root )
+	{
+		if( this._initialized ) return;
+		this._initialized = true;
+		
+		root = root || this.documentElement || this;
+		[root]
+			.concat( Array.from(root.querySelectorAll('*')) )
+			.map( node => {
+				
+			})
+		root.dispatchEvent( new Event('initialize') );
+		return this;
+	}
+	
+	createElement( nodeName )
+	{
+		return super.createElementNS( html.URI, nodeName );//.extends()
+	}
+	loadComponent( node, ext )
+	{
+		if( !node.Class )
+			$.get( node.url + (ext || '.xhtml') )
+				.then(
+					this.onComponentLoaded.bind( this, node ),
+					err => ext != '.js' && this.loadComponent( node, '.js' )
+				)
+	}
+	loadLinks()
+	{
+		Array.from( this.querySelectorAll('link[rel=component]') )
+			.map(function( link )
+			{
+				link.remove();
+				var globalName = link.attributes.href.value
+									.replace(/\.\//g,'')
+									.replace(/\.[^.]+$/,'')
+									.replace(/\//g,'.')
+				  , packagePath = globalName.split('.')
+				  , className = packagePath.pop()
+				  ;
+				
+				// debugger;
+				var xhr = new XMLHttpRequest;
+				xhr.onload = function()
+				{
+					doc = xhr.responseXML;
+					var innerClass = doc.querySelectorAll('Script').map(n=>n.remove()||n.textContent).join('\n');
+					link.document = doc;
+					eval(`${globalName} = class ${className} extends ${doc.documentElement.localName} {
+						constructor()
+						{
+							return new Element('jx:Window').extends( ${className} )
+						}
+						${className}()
+						{
+							super.${doc.documentElement.localName} && super.${doc.documentElement.localName}();
+							// var componentElement = ${className}.template.cloneNode(true);
+							// componentElement.style.position = 'absolute';
+							// componentElement.style.width = componentElement.style.height = '100%';
+							// this.rawChildren = this.createShadowRoot();
+							//debugger;
+							// this.rawChildren.appendChild( componentElement );
+							this.rawChildren = this.createShadowRoot().appendChild( ${className}.template.cloneNode(true) );
+							this.rawChildren.style.position = 'absolute';
+							this.rawChildren.style.width = this.rawChildren.style.height = '100%';
+							this.creationComplete && this.creationComplete();
+						}
+						${innerClass}
+					}`).template = doc.documentElement;
+// console.log( document.querySelectorAll(`${packagePath.join('.')}|${className}`) );
+// setTimeout("console.log( document.querySelectorAll('"+`${packagePath.join('.')}|${className}`+"'))", 1 );
+					setTimeout(function(){
+						Array.from( document.querySelectorAll(`${packagePath.join('.')}|${className}`) )
+							.map( n=>n.extends() )
+					},1);
+
+					// Array.from( doc.querySelectorAll('script') )
+					// 	.map( n => new Function('', n.innerHTML).apply(n) );
+				};
+				xhr.open( 'GET', link.href );
+				xhr.responseType = 'document';
+				link.type && xhr.overrideMimeType( link.type );
+				xhr.send();
+			})
+	}
+	
+	onComponentLoaded( node, doc )
+	{
+		doc.initialize();
+		var sup = doc.documentElement.constructor,
+			supTag = doc.documentElement.localName,
+			pack = doc.documentElement.namespace.package.packageName,
+			klass = 'class ' + node.localName + ' extends ' + pack + '.' + supTag,
+			methods = [
+				'\n\
+				constructor()\n\
+				{\n\
+					return new Element("' + (node.prefix ? node.prefix + ':' : '') + node.localName + '").extends().initialize()\n\
+				}',
+				'\n\
+				initialize()\n\
+				{\n\
+					var root;\n\
+					this.extends(jx.core.UIComponent);\n\
+					this.initialize();\n\
+					this.rawChildren.appendChild( root = this.Class.document.documentElement.cloneNode(true) );\n\
+					root.extends( Element );\n\
+					if( Jilex.options.useShadowDOM )\n\
+					{\n\
+						root.fixForShadowRoot();\n\
+						this.rawChildren.initialize();\n\
+					}\n\
+				}',
+				'\naze'+node.localName+'(){}'
+			];
+		console.log( klass + ' {\n' + methods.join('\n') + '\n}');
+		
+		if( !Package(pack).hasOwnProperty(supTag) )
+			document.loadComponent
+		var klass = eval( klass + ' {\n' + methods.join('\n') + '\n}');
+		klass.document = doc;
+		node.namespace.package[node.localName] = klass;
+		
+		node.constructor != node.Class
+		 && node.extends().initialize();
+	}
+
+
+}
+ShadowRoot.prototype.preinitialize = Document.prototype.preinitialize;
+ShadowRoot.prototype._createStyleImpl = Document.prototype._createStyleImpl;
+ShadowRoot.prototype.initialize = Document.prototype.initialize;
+ShadowRoot.prototype.loadComponent = Document.prototype.loadComponent;
+ShadowRoot.prototype.onComponentLoaded = Document.prototype.onComponentLoaded;
+
+Object.setPrototypeOf( XMLDocument.prototype, Document.prototype );
+Object.setPrototypeOf( HTMLDocument.prototype, Document.prototype );
+
+// document.extends( Document );
+document.Document();
+
+
+
+;
 /*
 *: modified native
 >: can be apllied on
@@ -909,7 +1165,8 @@ window.Node = class Node extends Natives.Node {
 		// TODO: should check class compatibility?
 		Class
 		&& typeof Class == 'function'
-		&& this.constructor != Class
+		// && this.constructor != Class
+		&& !(this instanceof Class)
 		&&
 			Object.setPrototypeOf( this, Class.prototype )
 			// && this.initialize
@@ -1070,6 +1327,7 @@ window.Node = class Node extends Natives.Node {
 Object.setPrototypeOf( Natives.Attr.prototype, Node.prototype );
 Object.setPrototypeOf( Natives.Element.prototype, Node.prototype );
 Object.setPrototypeOf( Natives.Document.prototype, Node.prototype );
+Object.setPrototypeOf( DocumentFragment.prototype, Node.prototype );
 Object.setPrototypeOf( CharacterData.prototype, Node.prototype );
 Object.setPrototypeOf( DocumentType.prototype, Node.prototype );
 
@@ -1518,6 +1776,7 @@ window.Element = class Element extends Natives.Element {
 	Element()
 	{
 		// this.extends()
+		this._implementStyle();
 	}
 	// inheritance test
 	// get children()
@@ -1573,7 +1832,7 @@ window.Element = class Element extends Natives.Element {
         ctx[this.id] = force ? this : ctx[this.id] || this;
     }
 	
-	implementStyle( extendedStyle )
+	implementStyle()
 	{
 	    var exists;
         try{ exists = typeof this.style != 'undefined' }
@@ -1627,16 +1886,16 @@ window.Element = class Element extends Natives.Element {
 		        				_rule.selectorText = '[*|id="' + v + '"]';
 							// this.id = v;
 							this.setAttributeNS( Jilex.jxNS, 'jx:id', v );
-							Object.getNotifier( this ).notify({
-								type: 'update',
-								name: 'jx::id',
-								oldValue: _old
-							});
-							Object.getNotifier( this ).notify({
-								type: 'update',
-								name: '	id',
-								oldValue: _old
-							});
+				// 			Object.getNotifier( this ).notify({
+				// 				type: 'update',
+				// 				name: 'jx::id',
+				// 				oldValue: _old
+				// 			});
+				// 			Object.getNotifier( this ).notify({
+				// 				type: 'update',
+				// 				name: '	id',
+				// 				oldValue: _old
+				// 			});
 		        		}
 		        	})
 		    		.bind( this )
@@ -1660,43 +1919,53 @@ window.Element = class Element extends Natives.Element {
 	 * @return {Object} An object with keys corresponding to xmlns prefixes. For duplicate prefix,
 	 * closest parent's prefix get rid of more far ancestors. 
 	 */
-	get xmlns()
-	{
-			var _xmlns = {}, node = this;
-			var list = 
-			[].slice.call( this.attributes && this.attributes.length ? this.attributes : [] )
-		list = list
-				.filter(function( attr )
-				{
-					return /^xmlns\:?/.test( attr.name )
-				})
-	     list = list
-				.concat( 
-					(function( o )
-					{
-						var a = [];
-						for( var n in o )
-							a.push( o[n] );
-						return a;
-					})
-					(
-						this.parentNode && this.parentNode != this.ownerDocument ? 
-							this.parentNode.xmlns : 
-								this.ownerDocument && this.parentNode != this.ownerDocument ? 
-									this.ownerDocument.documentElement.xmlns : 
-							{}
-					)
-				)
-	     list = list
-				.reverse()
-	     list = list
-				.map(function( attr )
-				{
-					var prefix = attr.name && attr.name.split(':')[1] || null;
-					 _xmlns[prefix] = attr.initialize();
-				})
-			return _xmlns;
-		}
+	// get xmlns()
+	// {
+	// 		// var _xmlns = {}, node = this;
+			
+			
+	// 		var _xmlns = this.parentNode && this.parentNode.xmlns || {};
+			
+	// 		for( let attr of this.attributes )
+	// 			attr.namespaceURI == "http://www.w3.org/2000/xmlns/"
+	// 				&& _xmlns[attr.localName] = attr;
+				
+	// 		var list = 
+	// 		Array.from( this.attributes )
+	// 		// [].slice.call( this.attributes && this.attributes.length ? this.attributes : [] )
+	// 	// list = list
+	// 			.filter(function( attr )
+	// 			{
+	// 				// return /^xmlns\:?/.test( attr.name )
+	// 				return attr.namespaceURI == "http://www.w3.org/2000/xmlns/"
+	// 			})
+	//      //list = list
+	// 			.concat(
+	// 				(function( o )
+	// 				{
+	// 					var a = [];
+	// 					for( var n in o )
+	// 						a.push( o[n] );
+	// 					return a;
+	// 				})
+	// 				(
+	// 					this.parentNode && this.parentNode != this.ownerDocument ? 
+	// 						this.parentNode.xmlns : 
+	// 							this.ownerDocument && this.parentNode != this.ownerDocument ? 
+	// 								this.ownerDocument.documentElement.xmlns : 
+	// 						{}
+	// 				)
+	// 			)
+	//      list = list
+	// 			.reverse()
+	//      list = list
+	// 			.map(function( attr )
+	// 			{
+	// 				var prefix = attr.name && attr.name.split(':')[1] || null;
+	// 				 _xmlns[prefix] = attr.initialize();
+	// 			})
+	// 		return _xmlns;
+	// 	}
 	
 	/**
 	 * namespace
@@ -1704,11 +1973,12 @@ window.Element = class Element extends Natives.Element {
 	 */
 	get namespace()
 	{
+		return Package( this.namespaceURI );
 		// return this.xmlns[this.prefix];
-		if( this.nodeType == 1 || this.nodeType == 2)
-			return this.xmlns[ this.prefix ];
-		else
-			return null;
+		// if( this.nodeType == 1 || this.nodeType == 2)
+			// return this.xmlns[ this.prefix ];
+		// else
+			// return null;
 	}
 	
 	/**
@@ -1716,12 +1986,20 @@ window.Element = class Element extends Natives.Element {
 	 */
 	get Class()
 	{
+		/*TODO check namespace aliases
+		var path = this.namespaceURI, klass = this.localName;
+            if( path == 'http://www.w3.org/1999/xhtml' )
+                return window[`HTML${klass[0].toUpperCase()+klass.substring(1).toLowerCase()}Element`];
+            else
+                return this.namespace[this.localName] || 
+                       this.namespace[Symbol.namespace][this.localName]
+		*/
 		var _ns = this.namespace;
 		if( this.nodeType == 1 && _ns )
 		{
 			// var klass = new Function( '', 'try{return '+_ns.document.querySelector('#'+this.localName).className+';}catch(e){}' )();
-			// var klass = this.namespace.package[this.localName];
-			var klass = Package( this.lookupNamespaceURI(this.prefix) )[this.localName];
+			var klass = this.namespace[this.localName];
+			// var klass = Package( this.lookupNamespaceURI(this.prefix) )[this.localName];
 			if( klass )
 				return klass;
 			// else
@@ -1968,7 +2246,8 @@ Object.setPrototypeOf( SVGElement.prototype, Element.prototype );
 /*******************/
 /* jx.core.Element */
 /*******************/
-Package('jx.core.*');
+var jx = window.jx || Package('jx.*');
+jx.core = Package('jx.core.*');
 /**
  * jx.core.Element
  * All jx.core.Element have jx namespaceURI.
@@ -2176,7 +2455,7 @@ var Jilex = class Jilex extends HTMLScriptElement {
     boot()
     {
     	if( this.options.implementStyles )
-	    	document._createStyleImpl();	
+	    	document._createStyleImpl();
     }
     
     getUniqueId( node )
@@ -2373,18 +2652,40 @@ var Jilex = class Jilex extends HTMLScriptElement {
 		
 	}
 	
-	get isJilex(){return true}
+	get Class() { return Jilex }
+	get isJilex() { return true }
 }
 
 // var ss = document.getElementsByTagName('script'),
 // 	thisScript;
-Jilex = window.Jilex = document.currentScript.extends( Jilex );
+Jilex = window[document.currentScript.id || 'Jilex'] = document.currentScript.extends( Jilex );
+document.currentScript.remove();
 // Jilex = window.Jilex = new Jilex( ss[ss.length - 1].attributes );
 
+// Jilex.parserErrors = document.$('parsererror')
+// 									.map( err => {
+// 												err.remove();
+// 												err.$('div')
+// 														.map( t => t.innerText )
+// 															.join()
+// 									})
+// 									.join()
+// 									.split(/\n/)
+// 										.filter( s => s != '' )
 
-
-
-	
+Jilex.catchParserError = function( root = document )
+{
+    return root.$('parsererror')
+                    .map( n => (
+                        n.remove(),
+                        n.$('div')[0]
+                            .textContent.trim()
+                                .split('\n')
+                                    .map( s => /line\s(\d{1,10})\sat\scolumn\s(\d{1,10}):(.*)/.exec(s) )
+                                    .map( a => `<parsererror line="${a[1]}" column="${a[2]}">${a[3]}</parsererror>` )
+                    ))
+}
+Jilex.parserErrors = Jilex.catchParserError();
 	
     
   //  function loadManifest( _xmlns )
@@ -2595,3 +2896,5 @@ Object.getOwnPropertyNames( window )
 Object.defineProperty( window, 'root', { get: () => document.documentElement } )
 
 Jilex.boot();
+
+})( window, document );
