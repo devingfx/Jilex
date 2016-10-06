@@ -328,7 +328,6 @@ window.Document = class Document extends Natives.Document {
 		this.addEventListener('DOMContentLoaded', e => this.preinitialize() );
 	}
 	
-	
 	get parserErrors()
 	{
 	    return this.$('parsererror')

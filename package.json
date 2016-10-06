@@ -28,5 +28,10 @@
     "grunt-contrib-watch": "^0.6.1",
     "should": "^7.1.0"
   },
-  "author": "Di Grégorio Thomas"
+  "author": "Di Grégorio Thomas",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-rename": "^1.2.2",
+    "through2": "^2.0.1"
+  }
 }
