@@ -6,13 +6,13 @@
  */
 function Package( QName )
 {
-	var cur, tar = window;
+	var uri = QName, cur, tar = window;
 	if( /^http|^library/.test(QName) )
 	{
 		var res = /^(https?|library):\/\/(.*?)\/(.*?)$/.exec(QName);
 		if(res)
 		{
-			QName = (res[2].split('.').reverse().join('/') +'/'+ res[3]).split('/').join('.');
+			QName = (res[2].replace(':','').split('.').reverse().join('/') +'/'+ res[3]).split('/').join('.');
 			// console.log(QName);
 		}
 		// QName = QName.split('/');
@@ -23,6 +23,7 @@ function Package( QName )
 	{
 		tar = tar[cur] = tar[cur] || {packageName: cur, parentPackage: tar};
 	}
+	tar.URI = uri;
 	return tar;
 }
 

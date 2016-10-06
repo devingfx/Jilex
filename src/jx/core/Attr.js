@@ -10,7 +10,7 @@
 Object.defineProperty( Attr.prototype, 'isXmlns', {
 	get: function()
 	{
-		return this.nodeType == 2 && this.namespaceURI == jx.xmlnsNS;
+		return this.nodeType == 2 && this.namespaceURI == 'http://www.w3.org/2000/xmlns/';
 	}
 });
 
@@ -32,4 +32,10 @@ Attr.prototype.initialize = function()
 	
 	this._initialized = true;
 	return this;
+}
+
+Attr.prototype.toCSSString = function()
+{
+	if( !this.isXmlns ) return '';
+	return `@namespace ${this.localName.replace('xmlns','').replace(/\./g,'\\.')} url("${this.value}");`
 }

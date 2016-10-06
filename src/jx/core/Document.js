@@ -328,6 +328,19 @@ window.Document = class Document extends Natives.Document {
 		this.addEventListener('DOMContentLoaded', e => this.preinitialize() );
 	}
 	
+	
+	get parserErrors()
+	{
+	    return this.$('parsererror')
+	                    .map( n => (
+	                        n.remove(),
+	                        n.$('div')[0]
+	                            .textContent.trim()
+	                                .split('\n')
+	                                    .map( s => /line\s(\d{1,10})\sat\scolumn\s(\d{1,10}):(.*)/.exec(s) )
+	                                    .map( a => `<parsererror line="${a[1]}" column="${a[2]}">${a[3]}</parsererror>` )
+	                    ))
+	}
 	/**
 	 * _createStyleImpl
 	 * HTMLElement does implement .style but not Element. This method creates an html <style> node 
@@ -355,6 +368,7 @@ window.Document = class Document extends Natives.Document {
 		if( this._preinitialized ) return;
 		this._preinitialized = true;
 		
+		this._createStyleImpl();
 		
 		// Resolve last local scripts
 		// localScript();
@@ -388,20 +402,21 @@ window.Document = class Document extends Natives.Document {
 				// node[node.constructor.name] && node[node.constructor.name]();
 				
 				// load dependency
-				/*!node.Class
-				 && * /Jilex.loadComponent( node )
-				 		.catch( e => console.log(e) )
-				 		.then( doc => node.Class
-										 && node.constructor != node.Class
-										 && node.extends().initialize()
-				 		)*/
+				!node.Class
+				 && Jilex.load( node.url )
+				 		.catch( e => console.error('Component not loaded. %s', e) )
+				 		.then( doc => doc.createClass()
+				 						 //&& node.Class
+										 //&& node.constructor != node.Class
+										 && node.extends()//.initialize()
+				 		)
 				
 				
 			})
 		
 		
 		
-		root.dispatchEvent( new Event('preinitialize') );
+		root.dispatchEvent( new Event('preinitialized') );
 		return this;
 	}
 	
@@ -409,9 +424,10 @@ window.Document = class Document extends Natives.Document {
 	
 	get isHtml5()
 	{
-		return document.doctype.name == "html"
-				&& document.doctype.systemId == "" 
-				&& document.doctype.publicId == ""
+		return this instanceof HTMLDocument
+		// return document.doctype.name == "html"
+				// && document.doctype.systemId == "" 
+				// && document.doctype.publicId == ""
 	}	
 	
 	
@@ -448,63 +464,48 @@ window.Document = class Document extends Natives.Document {
 					err => ext != '.js' && this.loadComponent( node, '.js' )
 				)
 	}
-	loadLinks()
+	
+	createClass()
 	{
-		Array.from( this.querySelectorAll('link[rel=component]') )
-			.map(function( link )
-			{
-				link.remove();
-				var globalName = link.attributes.href.value
-									.replace(/\.\//g,'')
-									.replace(/\.[^.]+$/,'')
-									.replace(/\//g,'.')
-				  , packagePath = globalName.split('.')
-				  , className = packagePath.pop()
-				  ;
-				
-				// debugger;
-				var xhr = new XMLHttpRequest;
-				xhr.onload = function()
-				{
-					doc = xhr.responseXML;
-					var innerClass = doc.querySelectorAll('Script').map(n=>n.remove()||n.textContent).join('\n');
-					link.document = doc;
-					eval(`${globalName} = class ${className} extends ${doc.documentElement.localName} {
-						constructor()
-						{
-							return new Element('jx:Window').extends( ${className} )
-						}
-						${className}()
-						{
-							super.${doc.documentElement.localName} && super.${doc.documentElement.localName}();
-							// var componentElement = ${className}.template.cloneNode(true);
-							// componentElement.style.position = 'absolute';
-							// componentElement.style.width = componentElement.style.height = '100%';
-							// this.rawChildren = this.createShadowRoot();
-							//debugger;
-							// this.rawChildren.appendChild( componentElement );
-							this.rawChildren = this.createShadowRoot().appendChild( ${className}.template.cloneNode(true) );
-							this.rawChildren.style.position = 'absolute';
-							this.rawChildren.style.width = this.rawChildren.style.height = '100%';
-							this.creationComplete && this.creationComplete();
-						}
-						${innerClass}
-					}`).template = doc.documentElement;
-// console.log( document.querySelectorAll(`${packagePath.join('.')}|${className}`) );
-// setTimeout("console.log( document.querySelectorAll('"+`${packagePath.join('.')}|${className}`+"'))", 1 );
-					setTimeout(function(){
-						Array.from( document.querySelectorAll(`${packagePath.join('.')}|${className}`) )
-							.map( n=>n.extends() )
-					},1);
-
-					// Array.from( doc.querySelectorAll('script') )
-					// 	.map( n => new Function('', n.innerHTML).apply(n) );
-				};
-				xhr.open( 'GET', link.href );
-				xhr.responseType = 'document';
-				link.type && xhr.overrideMimeType( link.type );
-				xhr.send();
-			})
+		var globalName = this.url.replace( document.referrer, '.' )
+							.replace(/\.\//g,'')
+							.replace(/\.[^.]+$/,'')
+							.replace(/\//g,'.')
+		  , packagePath = globalName.split('.')
+		  , className = packagePath.pop()
+		  , innerClass = this.querySelectorAll('Script')
+		  					.filter( n=> n.namespaceURI == Jilex.jxNS )
+		  					.map( n=> n.remove() || n.textContent )
+		  					.join('\n')
+		  ;
+		
+		let code = `class ${className} extends ${this.documentElement.localName} {
+	constructor()
+	{
+		return new Element('jx:Window').extends( ${className} )
+	}
+	${className}()
+	{
+		super.${this.documentElement.localName} && super.${this.documentElement.localName}();
+		// var componentElement = ${className}.template.cloneNode(true);
+		// componentElement.style.position = 'absolute';
+		// componentElement.style.width = componentElement.style.height = '100%';
+		// this.rawChildren = this.createShadowRoot();
+		//debugger;
+		// this.rawChildren.appendChild( componentElement );
+		this.rawChildren = this.createShadowRoot().appendChild( ${className}.template.cloneNode(true) );
+		this.rawChildren.style.position = 'absolute';
+		this.rawChildren.style.width = this.rawChildren.style.height = '100%';
+		this.creationComplete && this.creationComplete();
+	}
+	${innerClass}
+}`;
+		
+		
+		var klass = eval( `(${globalName} = ${code})` );
+		klass.template = this.documentElement;
+		
+		return klass;
 	}
 	
 	onComponentLoaded( node, doc )

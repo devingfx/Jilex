@@ -56,6 +56,8 @@ html.URI = _xhtmlNS;
 delete window._xhtmlNS;
 html.Document = HTMLDocument;
 html.Element = HTMLElement;
+// Fix <footer>
+window.HTMLFooterElement = HTMLDivElement;
 
 if( Jilex.options.extendHTMLElements )
 {
@@ -94,8 +96,8 @@ Object.getOwnPropertyNames( window )
 	    if( !name ) return;
 	    Object.setPrototypeOf( window[n].prototype, html.Element.prototype );
 	    
-	    if( Jilex.options.extendHTMLElements )
-	    {
+	    // if( Jilex.options.extendHTMLElements )
+	    // {
 		    klass = html[name] = eval( `(class ${name} extends ${n} {
 		    	constructor()
 		    	{
@@ -103,17 +105,17 @@ Object.getOwnPropertyNames( window )
 		    	}
 		    	${name}()
 		    	{
-		    		this.HTMLElement();
+		    		this.Element();
 		    	}
 		    })` );
 		    
-	    }
-	    else
-	    {
-	    	klass = html[name] = window[n];
+	    // }
+	    // else
+	    // {
+	    	// klass = html[name] = window[n];
 	    	// html[name].prototype[html[name].name] = function(){ this.HTMLElement(); }
 	    	// Object.setPrototypeOf( html[name].prototype, html.Element.prototype );
-	    }
+	    // }
 	    Object.defineProperty( html, name.toLowerCase(), {get: function(){ return klass }} );
 	});
 

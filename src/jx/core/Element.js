@@ -50,8 +50,9 @@ Element.prototype.querySelectorAll = Element.prototype.$ = function querySelecto
 		var style = this.ownerDocument.createElement('style');
 		this.appendChild( style );
 		// debugger;
-		
-		style.innerHTML = _nss( document.documentElement ) + selectors + '{content:"__querySelected__"}';
+		style.innerHTML = `${this.ownerDocument.xmlns.map( ns=> ns.toCSSString() ).join('\n')}
+		${selectors} {content:"__querySelected__"}`;
+		style.innerHTML = _nss( this.ownerDocument ) + selectors + '{content:"__querySelected__"}';
 		
 		var elements = Array.from( this.getElementsByTagName('*') )
 						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
@@ -72,7 +73,9 @@ Document.prototype.querySelectorAll = Document.prototype.$ = function querySelec
 		this.documentElement.appendChild( style );
 		// debugger;
 		
-		style.innerHTML = _nss( this.documentElement ) + selectors + '{content:"__querySelected__"}';
+		style.innerHTML = `${this.xmlns.map( ns=> ns.toCSSString() ).join('\n')}
+		${selectors} {content:"__querySelected__"}`;
+		// style.innerHTML = _nss( this.documentElement ) + selectors + '{content:"__querySelected__"}';
 		
 		var elements = Array.from( this.getElementsByTagName('*') )
 						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
@@ -191,7 +194,7 @@ window.Element = class Element extends Natives.Element {
         try{ exists = typeof this.style != 'undefined' }
         catch( e ){ exists = false }
         
-        if( Jilex.options.implementStyles && this.nodeType == 1 && !exists )
+        if( /*Jilex.options.implementStyles && */this.nodeType == 1 && !exists )
 	    {
 	        // TODO: go up in parentNodes to find shadowRoot or document
 	        var _impl = ( (this.parentNode && this.parentNode.styleSheets) || this.ownerDocument.styleSheets )._styleImpl,

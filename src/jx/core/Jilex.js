@@ -9,7 +9,7 @@ var Jilex = class Jilex extends HTMLScriptElement {
 	get svgNS(){ return 'http://www.w3.org/2000/svg' }
 	
 	// TODO: Make a real management of avoids: addAvoidNS removeAvoidNS addAvoidTag removeAvoidTag
-	get avoidNs(){ return [ Jilex.xhtmlNS, Jilex.svgNS, 'http://ns.adobe.com/2006/mxml/' ] }
+	get avoidNs(){ return [ this.xhtmlNS, this.svgNS, 'http://ns.adobe.com/2006/mxml/' ] }
 	get avoidNames(){ return 'html head title meta link script style'.split(' '); }
 	
 	docMapAll( fn )
@@ -49,7 +49,7 @@ var Jilex = class Jilex extends HTMLScriptElement {
 		Array.from( this.attributes )
 			.map( att => this.options[att.name] = att.value == 'true' );
 		
-	    document.addEventListener( 'DOMContentLoaded', e => document.preinitialize() );
+	    // document.addEventListener( 'DOMContentLoaded', e => document.preinitialize() );
 	    // window.addEventListener( 'load', e => document.initialize() );
 	    
 		// this.initialize();
@@ -101,18 +101,41 @@ var Jilex = class Jilex extends HTMLScriptElement {
 	}
     
 	
-	load( url )
+	load( url, type )
 	{
 		return new Promise(function( done, fail )
 		{
 			var xhr = new XMLHttpRequest();
 			xhr.onload = function()
 			{
-				console.log(arguments, this.responseText);
-				var doc = this.responseXML;
-				if( !doc ) return fail( this.response );
+				// console.log(arguments, this.responseText);
+				// var doc = this.responseXML || this.responseText;
 				
-				done( doc )
+				if( this.status == 200 )
+				{
+					// let type = this.getResponseHeader('Content-Type');
+					var doc = new Document(this.response, 'application/xhtml+xml');
+					var errors = doc.parserErrors;
+					if( errors.length )
+					{
+						console.error( 'Parser errors\n%o', errors );
+						doc = new Document(this.response, 'text/html');
+						var errors = doc.parserErrors;
+						if( errors.length )
+						{
+							console.error( 'Parser errors\n%o', errors );
+							try{
+								doc = JSON.parse( this.response );
+							}catch(e){}
+						}
+					}
+					if( !doc ) return fail( this.response );
+					
+					doc.url = url;
+					doc.dispatchEvent(new Event('DOMContentLoaded'));
+					
+					done( doc )
+				}
 			}
 			xhr.onerror = function()
 			{
@@ -120,6 +143,9 @@ var Jilex = class Jilex extends HTMLScriptElement {
 				console.log( arguments, this.status + ' ' + this.statusText )
 				fail( this.status + ' ' + this.statusText )
 			}
+			// xhr.responseType = 'document';
+			type && xhr.overrideMimeType( type );
+			
 			xhr.open('GET', url, true);
 			xhr.send();
 			
@@ -130,9 +156,11 @@ var Jilex = class Jilex extends HTMLScriptElement {
 	{
 		if( !node.Class )
 		{
-			if( jx.avoidNs.indexOf(node.namespaceURI) == -1 
-			 && jx.avoidNames.indexOf(node.localName) == -1 )
-				return this.load( node.url )
+			if( this.avoidNs.indexOf(node.namespaceURI) == -1 
+			 && this.avoidNames.indexOf(node.localName) == -1 )
+				return this.load( node.url+'.xhtml' )
+						.catch( e=> this.loadComponent(node.url+'.')
+											.catch( e=> this.loadComponent(node.url+'.js') ) )
 						.then( doc => {
 							doc.initialize();
 							return doc;
@@ -204,6 +232,10 @@ var Jilex = class Jilex extends HTMLScriptElement {
 					
 	}
 	
+	onDocumentLoaded()
+	{
+		
+	}
 	createClass( doc )
 	{
 		// exports.Jilex.loadComponent( doc.documentElement )
@@ -220,29 +252,27 @@ var Jilex = class Jilex extends HTMLScriptElement {
 				var sup = doc.documentElement.constructor,
 					supTag = doc.documentElement.localName,
 					ns = doc.documentElement.namespace, // TODO: Bug fix: namespace getter return undefined 1st time
-					pack = doc.documentElement.namespace.package.packageName,
+					pack = doc.documentElement.namespace.packageName,
 					klass = 'class ' + className + ' extends ' + (pack ? pack + '.' : '') + supTag,
 					methods = [
-						'\n\
-						constructor()\n\
-						{\n\
-							return new Element("' + /*(node.prefix ? node.prefix + ':' : '') +*/ className + '").extends().initialize()\n\
-						}',
-						'\n\
-						initialize()\n\
-						{\n\
-							var root;\n\
-							this.extends(jx.core.UIComponent);\n\
-							this.initialize();\n\
-							this.rawChildren.appendChild( root = this.Class.document.documentElement.cloneNode(true) );\n\
-							root.extends( Element );\n\
-							if( Jilex.options.useShadowDOM )\n\
-							{\n\
-								root.fixForShadowRoot();\n\
-								this.rawChildren.initialize();\n\
-							}\n\
-						}',
-						'\naze'+className+'(){}'
+						`constructor()
+						{
+							return new Element("${/*(node.prefix ? node.prefix + ':' : '') +*/ className}").extends().initialize()
+						}`,
+						`initialize()
+						{
+							var root;
+							this.extends(jx.core.UIComponent);
+							this.initialize();
+							this.rawChildren.appendChild( root = this.Class.document.documentElement.cloneNode(true) );
+							root.extends( Element );
+							if( Jilex.options.useShadowDOM )
+							{
+								root.fixForShadowRoot();
+								this.rawChildren.initialize();
+							}
+						}`,
+						`is${className}(){ return true }`
 					];
 				console.log( klass + ' {\n' + methods.join('\n') + '\n}');
 				
