@@ -71,13 +71,13 @@ console.tag = function( $0, recursive, lvl )
  */
 function Package( QName )
 {
-	var cur, tar = window;
+	var uri = QName, cur, tar = window;
 	if( /^http|^library/.test(QName) )
 	{
 		var res = /^(https?|library):\/\/(.*?)\/(.*?)$/.exec(QName);
 		if(res)
 		{
-			QName = (res[2].split('.').reverse().join('/') +'/'+ res[3]).split('/').join('.');
+			QName = (res[2].replace(':','').split('.').reverse().join('/') +'/'+ res[3]).split('/').join('.');
 			// console.log(QName);
 		}
 		// QName = QName.split('/');
@@ -88,6 +88,7 @@ function Package( QName )
 	{
 		tar = tar[cur] = tar[cur] || {packageName: cur, parentPackage: tar};
 	}
+	tar.URI = uri;
 	return tar;
 }
 
@@ -721,6 +722,19 @@ window.Document = class Document extends Natives.Document {
 		this.addEventListener('DOMContentLoaded', e => this.preinitialize() );
 	}
 	
+	
+	get parserErrors()
+	{
+	    return this.$('parsererror')
+	                    .map( n => (
+	                        n.remove(),
+	                        n.$('div')[0]
+	                            .textContent.trim()
+	                                .split('\n')
+	                                    .map( s => /line\s(\d{1,10})\sat\scolumn\s(\d{1,10}):(.*)/.exec(s) )
+	                                    .map( a => `<parsererror line="${a[1]}" column="${a[2]}">${a[3]}</parsererror>` )
+	                    ))
+	}
 	/**
 	 * _createStyleImpl
 	 * HTMLElement does implement .style but not Element. This method creates an html <style> node 
@@ -748,6 +762,7 @@ window.Document = class Document extends Natives.Document {
 		if( this._preinitialized ) return;
 		this._preinitialized = true;
 		
+		this._createStyleImpl();
 		
 		// Resolve last local scripts
 		// localScript();
@@ -781,20 +796,21 @@ window.Document = class Document extends Natives.Document {
 				// node[node.constructor.name] && node[node.constructor.name]();
 				
 				// load dependency
-				/*!node.Class
-				 && * /Jilex.loadComponent( node )
-				 		.catch( e => console.log(e) )
-				 		.then( doc => node.Class
-										 && node.constructor != node.Class
-										 && node.extends().initialize()
-				 		)*/
+				!node.Class
+				 && Jilex.load( node.url )
+				 		.catch( e => console.error('Component not loaded. %s', e) )
+				 		.then( doc => doc.createClass()
+				 						 //&& node.Class
+										 //&& node.constructor != node.Class
+										 && node.extends()//.initialize()
+				 		)
 				
 				
 			})
 		
 		
 		
-		root.dispatchEvent( new Event('preinitialize') );
+		root.dispatchEvent( new Event('preinitialized') );
 		return this;
 	}
 	
@@ -802,9 +818,10 @@ window.Document = class Document extends Natives.Document {
 	
 	get isHtml5()
 	{
-		return document.doctype.name == "html"
-				&& document.doctype.systemId == "" 
-				&& document.doctype.publicId == ""
+		return this instanceof HTMLDocument
+		// return document.doctype.name == "html"
+				// && document.doctype.systemId == "" 
+				// && document.doctype.publicId == ""
 	}	
 	
 	
@@ -841,63 +858,48 @@ window.Document = class Document extends Natives.Document {
 					err => ext != '.js' && this.loadComponent( node, '.js' )
 				)
 	}
-	loadLinks()
+	
+	createClass()
 	{
-		Array.from( this.querySelectorAll('link[rel=component]') )
-			.map(function( link )
-			{
-				link.remove();
-				var globalName = link.attributes.href.value
-									.replace(/\.\//g,'')
-									.replace(/\.[^.]+$/,'')
-									.replace(/\//g,'.')
-				  , packagePath = globalName.split('.')
-				  , className = packagePath.pop()
-				  ;
-				
-				// debugger;
-				var xhr = new XMLHttpRequest;
-				xhr.onload = function()
-				{
-					doc = xhr.responseXML;
-					var innerClass = doc.querySelectorAll('Script').map(n=>n.remove()||n.textContent).join('\n');
-					link.document = doc;
-					eval(`${globalName} = class ${className} extends ${doc.documentElement.localName} {
-						constructor()
-						{
-							return new Element('jx:Window').extends( ${className} )
-						}
-						${className}()
-						{
-							super.${doc.documentElement.localName} && super.${doc.documentElement.localName}();
-							// var componentElement = ${className}.template.cloneNode(true);
-							// componentElement.style.position = 'absolute';
-							// componentElement.style.width = componentElement.style.height = '100%';
-							// this.rawChildren = this.createShadowRoot();
-							//debugger;
-							// this.rawChildren.appendChild( componentElement );
-							this.rawChildren = this.createShadowRoot().appendChild( ${className}.template.cloneNode(true) );
-							this.rawChildren.style.position = 'absolute';
-							this.rawChildren.style.width = this.rawChildren.style.height = '100%';
-							this.creationComplete && this.creationComplete();
-						}
-						${innerClass}
-					}`).template = doc.documentElement;
-// console.log( document.querySelectorAll(`${packagePath.join('.')}|${className}`) );
-// setTimeout("console.log( document.querySelectorAll('"+`${packagePath.join('.')}|${className}`+"'))", 1 );
-					setTimeout(function(){
-						Array.from( document.querySelectorAll(`${packagePath.join('.')}|${className}`) )
-							.map( n=>n.extends() )
-					},1);
-
-					// Array.from( doc.querySelectorAll('script') )
-					// 	.map( n => new Function('', n.innerHTML).apply(n) );
-				};
-				xhr.open( 'GET', link.href );
-				xhr.responseType = 'document';
-				link.type && xhr.overrideMimeType( link.type );
-				xhr.send();
-			})
+		var globalName = this.url.replace( document.referrer, '.' )
+							.replace(/\.\//g,'')
+							.replace(/\.[^.]+$/,'')
+							.replace(/\//g,'.')
+		  , packagePath = globalName.split('.')
+		  , className = packagePath.pop()
+		  , innerClass = this.querySelectorAll('Script')
+		  					.filter( n=> n.namespaceURI == Jilex.jxNS )
+		  					.map( n=> n.remove() || n.textContent )
+		  					.join('\n')
+		  ;
+		
+		let code = `class ${className} extends ${this.documentElement.localName} {
+	constructor()
+	{
+		return new Element('jx:Window').extends( ${className} )
+	}
+	${className}()
+	{
+		super.${this.documentElement.localName} && super.${this.documentElement.localName}();
+		// var componentElement = ${className}.template.cloneNode(true);
+		// componentElement.style.position = 'absolute';
+		// componentElement.style.width = componentElement.style.height = '100%';
+		// this.rawChildren = this.createShadowRoot();
+		//debugger;
+		// this.rawChildren.appendChild( componentElement );
+		this.rawChildren = this.createShadowRoot().appendChild( ${className}.template.cloneNode(true) );
+		this.rawChildren.style.position = 'absolute';
+		this.rawChildren.style.width = this.rawChildren.style.height = '100%';
+		this.creationComplete && this.creationComplete();
+	}
+	${innerClass}
+}`;
+		
+		
+		var klass = eval( `(${globalName} = ${code})` );
+		klass.template = this.documentElement;
+		
+		return klass;
 	}
 	
 	onComponentLoaded( node, doc )
@@ -1347,7 +1349,7 @@ Object.setPrototypeOf( DocumentType.prototype, Node.prototype );
 Object.defineProperty( Attr.prototype, 'isXmlns', {
 	get: function()
 	{
-		return this.nodeType == 2 && this.namespaceURI == jx.xmlnsNS;
+		return this.nodeType == 2 && this.namespaceURI == 'http://www.w3.org/2000/xmlns/';
 	}
 });
 
@@ -1369,6 +1371,12 @@ Attr.prototype.initialize = function()
 	
 	this._initialized = true;
 	return this;
+}
+
+Attr.prototype.toCSSString = function()
+{
+	if( !this.isXmlns ) return '';
+	return `@namespace ${this.localName.replace('xmlns','').replace(/\./g,'\\.')} url("${this.value}");`
 }
 ;
 /*************/
@@ -1697,8 +1705,9 @@ Element.prototype.querySelectorAll = Element.prototype.$ = function querySelecto
 		var style = this.ownerDocument.createElement('style');
 		this.appendChild( style );
 		// debugger;
-		
-		style.innerHTML = _nss( document.documentElement ) + selectors + '{content:"__querySelected__"}';
+		style.innerHTML = `${this.ownerDocument.xmlns.map( ns=> ns.toCSSString() ).join('\n')}
+		${selectors} {content:"__querySelected__"}`;
+		style.innerHTML = _nss( this.ownerDocument ) + selectors + '{content:"__querySelected__"}';
 		
 		var elements = Array.from( this.getElementsByTagName('*') )
 						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
@@ -1719,7 +1728,9 @@ Document.prototype.querySelectorAll = Document.prototype.$ = function querySelec
 		this.documentElement.appendChild( style );
 		// debugger;
 		
-		style.innerHTML = _nss( this.documentElement ) + selectors + '{content:"__querySelected__"}';
+		style.innerHTML = `${this.xmlns.map( ns=> ns.toCSSString() ).join('\n')}
+		${selectors} {content:"__querySelected__"}`;
+		// style.innerHTML = _nss( this.documentElement ) + selectors + '{content:"__querySelected__"}';
 		
 		var elements = Array.from( this.getElementsByTagName('*') )
 						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
@@ -1838,7 +1849,7 @@ window.Element = class Element extends Natives.Element {
         try{ exists = typeof this.style != 'undefined' }
         catch( e ){ exists = false }
         
-        if( Jilex.options.implementStyles && this.nodeType == 1 && !exists )
+        if( /*Jilex.options.implementStyles && */this.nodeType == 1 && !exists )
 	    {
 	        // TODO: go up in parentNodes to find shadowRoot or document
 	        var _impl = ( (this.parentNode && this.parentNode.styleSheets) || this.ownerDocument.styleSheets )._styleImpl,
@@ -2406,7 +2417,7 @@ var Jilex = class Jilex extends HTMLScriptElement {
 	get svgNS(){ return 'http://www.w3.org/2000/svg' }
 	
 	// TODO: Make a real management of avoids: addAvoidNS removeAvoidNS addAvoidTag removeAvoidTag
-	get avoidNs(){ return [ Jilex.xhtmlNS, Jilex.svgNS, 'http://ns.adobe.com/2006/mxml/' ] }
+	get avoidNs(){ return [ this.xhtmlNS, this.svgNS, 'http://ns.adobe.com/2006/mxml/' ] }
 	get avoidNames(){ return 'html head title meta link script style'.split(' '); }
 	
 	docMapAll( fn )
@@ -2446,7 +2457,7 @@ var Jilex = class Jilex extends HTMLScriptElement {
 		Array.from( this.attributes )
 			.map( att => this.options[att.name] = att.value == 'true' );
 		
-	    document.addEventListener( 'DOMContentLoaded', e => document.preinitialize() );
+	    // document.addEventListener( 'DOMContentLoaded', e => document.preinitialize() );
 	    // window.addEventListener( 'load', e => document.initialize() );
 	    
 		// this.initialize();
@@ -2498,18 +2509,41 @@ var Jilex = class Jilex extends HTMLScriptElement {
 	}
     
 	
-	load( url )
+	load( url, type )
 	{
 		return new Promise(function( done, fail )
 		{
 			var xhr = new XMLHttpRequest();
 			xhr.onload = function()
 			{
-				console.log(arguments, this.responseText);
-				var doc = this.responseXML;
-				if( !doc ) return fail( this.response );
+				// console.log(arguments, this.responseText);
+				// var doc = this.responseXML || this.responseText;
 				
-				done( doc )
+				if( this.status == 200 )
+				{
+					// let type = this.getResponseHeader('Content-Type');
+					var doc = new Document(this.response, 'application/xhtml+xml');
+					var errors = doc.parserErrors;
+					if( errors.length )
+					{
+						console.error( 'Parser errors\n%o', errors );
+						doc = new Document(this.response, 'text/html');
+						var errors = doc.parserErrors;
+						if( errors.length )
+						{
+							console.error( 'Parser errors\n%o', errors );
+							try{
+								doc = JSON.parse( this.response );
+							}catch(e){}
+						}
+					}
+					if( !doc ) return fail( this.response );
+					
+					doc.url = url;
+					doc.dispatchEvent(new Event('DOMContentLoaded'));
+					
+					done( doc )
+				}
 			}
 			xhr.onerror = function()
 			{
@@ -2517,6 +2551,9 @@ var Jilex = class Jilex extends HTMLScriptElement {
 				console.log( arguments, this.status + ' ' + this.statusText )
 				fail( this.status + ' ' + this.statusText )
 			}
+			// xhr.responseType = 'document';
+			type && xhr.overrideMimeType( type );
+			
 			xhr.open('GET', url, true);
 			xhr.send();
 			
@@ -2527,9 +2564,11 @@ var Jilex = class Jilex extends HTMLScriptElement {
 	{
 		if( !node.Class )
 		{
-			if( jx.avoidNs.indexOf(node.namespaceURI) == -1 
-			 && jx.avoidNames.indexOf(node.localName) == -1 )
-				return this.load( node.url )
+			if( this.avoidNs.indexOf(node.namespaceURI) == -1 
+			 && this.avoidNames.indexOf(node.localName) == -1 )
+				return this.load( node.url+'.xhtml' )
+						.catch( e=> this.loadComponent(node.url+'.')
+											.catch( e=> this.loadComponent(node.url+'.js') ) )
 						.then( doc => {
 							doc.initialize();
 							return doc;
@@ -2601,6 +2640,10 @@ var Jilex = class Jilex extends HTMLScriptElement {
 					
 	}
 	
+	onDocumentLoaded()
+	{
+		
+	}
 	createClass( doc )
 	{
 		// exports.Jilex.loadComponent( doc.documentElement )
@@ -2617,29 +2660,27 @@ var Jilex = class Jilex extends HTMLScriptElement {
 				var sup = doc.documentElement.constructor,
 					supTag = doc.documentElement.localName,
 					ns = doc.documentElement.namespace, // TODO: Bug fix: namespace getter return undefined 1st time
-					pack = doc.documentElement.namespace.package.packageName,
+					pack = doc.documentElement.namespace.packageName,
 					klass = 'class ' + className + ' extends ' + (pack ? pack + '.' : '') + supTag,
 					methods = [
-						'\n\
-						constructor()\n\
-						{\n\
-							return new Element("' + /*(node.prefix ? node.prefix + ':' : '') +*/ className + '").extends().initialize()\n\
-						}',
-						'\n\
-						initialize()\n\
-						{\n\
-							var root;\n\
-							this.extends(jx.core.UIComponent);\n\
-							this.initialize();\n\
-							this.rawChildren.appendChild( root = this.Class.document.documentElement.cloneNode(true) );\n\
-							root.extends( Element );\n\
-							if( Jilex.options.useShadowDOM )\n\
-							{\n\
-								root.fixForShadowRoot();\n\
-								this.rawChildren.initialize();\n\
-							}\n\
-						}',
-						'\naze'+className+'(){}'
+						`constructor()
+						{
+							return new Element("${/*(node.prefix ? node.prefix + ':' : '') +*/ className}").extends().initialize()
+						}`,
+						`initialize()
+						{
+							var root;
+							this.extends(jx.core.UIComponent);
+							this.initialize();
+							this.rawChildren.appendChild( root = this.Class.document.documentElement.cloneNode(true) );
+							root.extends( Element );
+							if( Jilex.options.useShadowDOM )
+							{
+								root.fixForShadowRoot();
+								this.rawChildren.initialize();
+							}
+						}`,
+						`is${className}(){ return true }`
 					];
 				console.log( klass + ' {\n' + methods.join('\n') + '\n}');
 				
@@ -2818,6 +2859,8 @@ html.URI = _xhtmlNS;
 delete window._xhtmlNS;
 html.Document = HTMLDocument;
 html.Element = HTMLElement;
+// Fix <footer>
+window.HTMLFooterElement = HTMLDivElement;
 
 if( Jilex.options.extendHTMLElements )
 {
@@ -2856,8 +2899,8 @@ Object.getOwnPropertyNames( window )
 	    if( !name ) return;
 	    Object.setPrototypeOf( window[n].prototype, html.Element.prototype );
 	    
-	    if( Jilex.options.extendHTMLElements )
-	    {
+	    // if( Jilex.options.extendHTMLElements )
+	    // {
 		    klass = html[name] = eval( `(class ${name} extends ${n} {
 		    	constructor()
 		    	{
@@ -2865,17 +2908,17 @@ Object.getOwnPropertyNames( window )
 		    	}
 		    	${name}()
 		    	{
-		    		this.HTMLElement();
+		    		this.Element();
 		    	}
 		    })` );
 		    
-	    }
-	    else
-	    {
-	    	klass = html[name] = window[n];
+	    // }
+	    // else
+	    // {
+	    	// klass = html[name] = window[n];
 	    	// html[name].prototype[html[name].name] = function(){ this.HTMLElement(); }
 	    	// Object.setPrototypeOf( html[name].prototype, html.Element.prototype );
-	    }
+	    // }
 	    Object.defineProperty( html, name.toLowerCase(), {get: function(){ return klass }} );
 	});
 
