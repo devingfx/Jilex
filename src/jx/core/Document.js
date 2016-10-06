@@ -467,7 +467,7 @@ window.Document = class Document extends Natives.Document {
 	
 	createClass()
 	{
-		var globalName = this.url.replace( document.referrer, '.' )
+		var globalName = this.url//.replace( document.referrer, '.' )
 							.replace(/\.\//g,'')
 							.replace(/\.[^.]+$/,'')
 							.replace(/\//g,'.')
