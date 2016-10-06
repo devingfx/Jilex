@@ -708,7 +708,7 @@ window.Document = class Document extends Natives.Document {
 	constructor( src, type )
 	{
 		var _current = new DOMParser()
-							.parseFromString( str, type || 'text/html' )
+							.parseFromString( src, type || 'text/html' )
 		  , _errors = _current.$('parsererror div')
 		  ;
 	
@@ -1832,7 +1832,7 @@ window.Element = class Element extends Natives.Element {
         ctx[this.id] = force ? this : ctx[this.id] || this;
     }
 	
-	implementStyle()
+	_implementStyle()
 	{
 	    var exists;
         try{ exists = typeof this.style != 'undefined' }
@@ -2447,7 +2447,7 @@ var Jilex = class Jilex extends HTMLScriptElement {
 			.map( att => this.options[att.name] = att.value == 'true' );
 		
 	    document.addEventListener( 'DOMContentLoaded', e => document.preinitialize() );
-	    window.addEventListener( 'load', e => document.initialize() );
+	    // window.addEventListener( 'load', e => document.initialize() );
 	    
 		// this.initialize();
 	}
