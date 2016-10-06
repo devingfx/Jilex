@@ -50,7 +50,7 @@ var Jilex = class Jilex extends HTMLScriptElement {
 			.map( att => this.options[att.name] = att.value == 'true' );
 		
 	    document.addEventListener( 'DOMContentLoaded', e => document.preinitialize() );
-	    window.addEventListener( 'load', e => document.initialize() );
+	    // window.addEventListener( 'load', e => document.initialize() );
 	    
 		// this.initialize();
 	}

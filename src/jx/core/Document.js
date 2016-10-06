@@ -315,7 +315,7 @@ window.Document = class Document extends Natives.Document {
 	constructor( src, type )
 	{
 		var _current = new DOMParser()
-							.parseFromString( str, type || 'text/html' )
+							.parseFromString( src, type || 'text/html' )
 		  , _errors = _current.$('parsererror div')
 		  ;
 	

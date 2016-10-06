@@ -185,7 +185,7 @@ window.Element = class Element extends Natives.Element {
         ctx[this.id] = force ? this : ctx[this.id] || this;
     }
 	
-	implementStyle()
+	_implementStyle()
 	{
 	    var exists;
         try{ exists = typeof this.style != 'undefined' }
