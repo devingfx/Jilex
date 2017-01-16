@@ -10,10 +10,15 @@ Really early stage of a try to port Flex framework to Javascript and xHTML.
 ```xml
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:jx="http://ns.devingfx.com/jxml/2015"
-      xmlns:local="*">
+      xmlns:local="."
+      xmlns:jquery="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"
+      xmlns:util="npm:util@0.10.3"
+      xmlns:lib="github:user/repo@0.0.0/path/lib.js">
     
     <jx:Element/>
     <jx:Editor/>
+    
+    <lib:AwesomeComponent/>
     
     <local:MyComp text="Coucou"/>
     <local:MySuperComp/>
@@ -37,16 +42,23 @@ Really early stage of a try to port Flex framework to Javascript and xHTML.
 ### Comprehensible classes
 
 ```es6
-jx.Button = class Button extends html.Button
+import { Bindable } from 'jilex/decorators.js'
+import { Component } from 'jilex/Component.js'
+import $ from 'jquery'
+
+export class Button extends Component
 {
-	constructor()
-	{
-		return new Element( 'jx:Button' ).extends( jx.Button );
-	}
 	Button()
 	{
-		this.
+		super.Component();
+		this.rawChildren.append( ...DOM`
+			<icon:${this.attributes.icon}/>
+			<span>${this.value}</span>
+		`);
+		this.icon = $( this.raw ).find('i');
 	}
+	
+	@Bindable
 	get value()
 	{
 		return super.value.replace(/^jx\s/, '');
@@ -61,7 +73,18 @@ jx.Button = class Button extends html.Button
 ```
 index.xhtml:
 ```xml
-<jx:Button value="Hello"/>
+<jx:Button icon="bubble" value="Hello"/>
+```
+renders:
+```xml
+<jx:Button icon="bubble" value="Hello">
+	+ shadow-root
+		<element xmlns="..." xmlns:jx="...">
+			<content></content>
+		</element>
+	<icon:bubble/>
+	<span>jx Hello</span>
+<jx:Button>
 ```
 
 @see [ES6 Classes](https://github.com/devingfx/Jilex/wiki/ES6-Classes)
