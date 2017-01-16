@@ -43,7 +43,10 @@ jx.Button = class Button extends html.Button
 	{
 		return new Element( 'jx:Button' ).extends( jx.Button );
 	}
-	
+	Button()
+	{
+		this.
+	}
 	get value()
 	{
 		return super.value.replace(/^jx\s/, '');
@@ -56,11 +59,16 @@ jx.Button = class Button extends html.Button
 	get isButton(){return true}
 }
 ```
+index.xhtml:
+```xml
+<jx:Button value="Hello"/>
+```
+
 @see [ES6 Classes](https://github.com/devingfx/Jilex/wiki/ES6-Classes)
 
 ### HTML Components
 
-Carousel.xhtml
+myLib/Carousel.xhtml
 ```xml
 <div xmlns="http://www.w3.org/1999/xhtml"
      xmlns:jx="http://ns.devingfx.com/jxml/2015"
@@ -81,7 +89,7 @@ Carousel.xhtml
 	<button id="next" label="NEXT" onclick="this.next()"/>
 </div>
 ```
-in another document:
+index.xhtml:
 ```xml
 <myLib:Carousel photoPerPage="3"/>
 	<img src="..."/>
