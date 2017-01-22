@@ -65,34 +65,34 @@ Element.prototype.querySelectorAll = Element.prototype.$ = function querySelecto
 		return Array.from( _qsa.call( this, selectors ) )
 };
 
-Document.prototype.querySelectorAll = Document.prototype.$ = function querySelectorAll( selectors )
-{
-	if( selectors.indexOf('|') != -1 )
-	{
-		var style = this.createElement('style');
-		this.documentElement.appendChild( style );
-		// debugger;
+// Document.prototype.querySelectorAll = Document.prototype.$ = function querySelectorAll( selectors )
+// {
+// 	if( selectors.indexOf('|') != -1 )
+// 	{
+// 		var style = this.createElement('style');
+// 		this.documentElement.appendChild( style );
+// 		// debugger;
 		
-		style.innerHTML = `${this.xmlns.map( ns=> ns.toCSSString() ).join('\n')}
-		${selectors} {content:"__querySelected__"}`;
-		// style.innerHTML = _nss( this.documentElement ) + selectors + '{content:"__querySelected__"}';
+// 		style.innerHTML = `${this.xmlns.map( ns=> ns.toCSSString() ).join('\n')}
+// 		${selectors} {content:"__querySelected__"}`;
+// 		// style.innerHTML = _nss( this.documentElement ) + selectors + '{content:"__querySelected__"}';
 		
-		var elements = Array.from( this.getElementsByTagName('*') )
-						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
+// 		var elements = Array.from( this.getElementsByTagName('*') )
+// 						.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
 		
-		style.parentNode.removeChild( style );
+// 		style.parentNode.removeChild( style );
 		
-		return elements;
-	}
-	else
-		return Array.from( _dqsa.call( this, selectors ) )
-};
+// 		return elements;
+// 	}
+// 	else
+// 		return Array.from( _dqsa.call( this, selectors ) )
+// };
 
-Element.prototype.querySelector = Document.prototype.querySelector = function querySelector( selectors )
-{
-	var elements = this.querySelectorAll( selectors );
-	return elements.length ? elements[0] : null;
-};
+// Element.prototype.querySelector = Document.prototype.querySelector = function querySelector( selectors )
+// {
+// 	var elements = this.querySelectorAll( selectors );
+// 	return elements.length ? elements[0] : null;
+// };
 
 // TODO: must reimplement also Element.matches
 Element.prototype.matches = function matches( selectors )
@@ -103,9 +103,11 @@ Element.prototype.matches = function matches( selectors )
 		this.appendChild( style );
 		// debugger;
 		
-		style.innerHTML = _nss( document.documentElement ) + selectors + '{content:"__querySelected__"}';
+		style.innerHTML = `${this.ownerDocument.xmlns.map( ns=> ns.toCSSString() ).join('\n')}
+		${selectors} {content:"__Element.match__"}`;
 		
-		var flag = getComputedStyle(this).content == '"__querySelected__"';
+		
+		var flag = getComputedStyle(this).content == '"__Element.match__"';
 		
 		style.parentNode.removeChild( style );
 		

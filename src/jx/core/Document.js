@@ -311,6 +311,10 @@ like DOMParser or XMLDocument classes ...
 
 */
 
+var _qsa = Natives.Element.prototype.querySelectorAll,
+	_matches = Element.prototype.matches,
+	_dqsa = window.qsa =  Natives.Document.prototype.querySelectorAll
+
 window.Document = class Document extends Natives.Document {
 	constructor( src, type )
 	{
@@ -327,6 +331,7 @@ window.Document = class Document extends Natives.Document {
 	{
 		this.addEventListener('DOMContentLoaded', e => this.preinitialize() );
 	}
+	
 	
 	get parserErrors()
 	{
@@ -402,7 +407,7 @@ window.Document = class Document extends Natives.Document {
 				
 				// load dependency
 				!node.Class
-				 && Jilex.load( node.url )
+				 && Jilex.loadDocument( node )
 				 		.catch( e => console.error('Component not loaded. %s', e) )
 				 		.then( doc => doc.createClass()
 				 						 //&& node.Class
@@ -466,13 +471,20 @@ window.Document = class Document extends Natives.Document {
 	
 	createClass()
 	{
-		var globalName = this.url//.replace( document.referrer, '.' )
-							.replace(/\.\//g,'')
-							.replace(/\.[^.]+$/,'')
-							.replace(/\//g,'.')
-		  , packagePath = globalName.split('.')
+		
+		var classQName = (this.baseURI || this.URL || this.url)
+							.replace( new RegExp(path + '\\/(.*?)\\..*'), '$1' )
+							.split('/').join('.')
+		  , className = classQName.split('.').pop()
+		
+		// var globalName = (this.baseURI || this.url)//.replace( document.referrer, '.' )
+							// .replace(/\.\//g,'')
+							// .replace(/\.[^.]+$/,'')
+							// .replace(/\//g,'.')
+		  //, packagePath = globalName.split('.')
+		  , packagePath = classQName.split('.')
 		  , className = packagePath.pop()
-		  , innerClass = this.querySelectorAll('Script')
+		  , innerClass = this.queryAll('jx|Script')
 		  					.filter( n=> n.namespaceURI == Jilex.jxNS )
 		  					.map( n=> n.remove() || n.textContent )
 		  					.join('\n')
@@ -481,27 +493,22 @@ window.Document = class Document extends Natives.Document {
 		let code = `class ${className} extends ${this.documentElement.localName} {
 	constructor()
 	{
-		return new Element('jx:Window').extends( ${className} )
+		return new Element('${this.prefix?this.prefix+':':''}${className}').extends( ${className} )
 	}
 	${className}()
 	{
 		super.${this.documentElement.localName} && super.${this.documentElement.localName}();
-		// var componentElement = ${className}.template.cloneNode(true);
-		// componentElement.style.position = 'absolute';
-		// componentElement.style.width = componentElement.style.height = '100%';
-		// this.rawChildren = this.createShadowRoot();
 		//debugger;
-		// this.rawChildren.appendChild( componentElement );
 		this.rawChildren = this.createShadowRoot().appendChild( ${className}.template.cloneNode(true) );
-		this.rawChildren.style.position = 'absolute';
-		this.rawChildren.style.width = this.rawChildren.style.height = '100%';
+		// this.rawChildren.style.position = 'absolute';
+		// this.rawChildren.style.width = this.rawChildren.style.height = '100%';
 		this.creationComplete && this.creationComplete();
 	}
 	${innerClass}
 }`;
 		
 		
-		var klass = eval( `(${globalName} = ${code})` );
+		var klass = eval( `(${code})` );
 		klass.template = this.documentElement;
 		
 		return klass;
@@ -547,8 +554,44 @@ window.Document = class Document extends Natives.Document {
 		node.constructor != node.Class
 		 && node.extends().initialize();
 	}
-
-
+	
+	
+	$( selectors ){ return this.queryAll(selectors) }
+	
+	/* overrides */
+	
+	
+	query( selector ){ let node = this.querySelector(selector); return res && (res.parentNode === this) && res }
+	
+	
+	queryAll( selectors )
+	{
+		if( selectors.indexOf('|') != -1 )
+		{
+			var style = this.createElement('style');
+			this.documentElement.appendChild( style );
+			// debugger;
+			
+			style.innerHTML = `${this.xmlns.map( ns=> ns.toCSSString() ).join('\n')}
+			${selectors} {content:"__querySelected__"}`;
+			// style.innerHTML = _nss( this.documentElement ) + selectors + '{content:"__querySelected__"}';
+			
+			var elements = Array.from( this.getElementsByTagName('*') )
+							.filter( n => getComputedStyle(n).content == '"__querySelected__"' );
+			
+			this.documentElement.removeChild( style );
+			
+			return elements;
+		}
+		else
+			return Array.from( super.querySelectorAll(selectors) )
+	}
+	
+	querySelector( selectors )
+	{
+		var elements = this.queryAll( selectors );
+		return elements.length ? elements[0] : null;
+	}
 }
 ShadowRoot.prototype.preinitialize = Document.prototype.preinitialize;
 ShadowRoot.prototype._createStyleImpl = Document.prototype._createStyleImpl;
@@ -558,9 +601,5 @@ ShadowRoot.prototype.onComponentLoaded = Document.prototype.onComponentLoaded;
 
 Object.setPrototypeOf( XMLDocument.prototype, Document.prototype );
 Object.setPrototypeOf( HTMLDocument.prototype, Document.prototype );
-
-// document.extends( Document );
-document.Document();
-
 
 

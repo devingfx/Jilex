@@ -45,7 +45,20 @@ var Jilex = class Jilex extends HTMLScriptElement {
 	Jilex()
 	{
 		// this.Element();
-		this.options = {};
+		this.options = {
+			implementStyles: true,
+			// implement-styles: true,
+			extendHTMLElements: false,
+			// extend-h-t-m-l-elements: false,
+			// extend-html-elements: false,
+			useShadowDOM: true,
+			// use-shadow-d-o-m: true,
+			// use-shadow-dom: true,
+			
+			extensions: 'xhtml js html xml mxml jxml json'.split(' ')
+			
+			// loadHTTP: false
+		};
 		Array.from( this.attributes )
 			.map( att => this.options[att.name] = att.value == 'true' );
 		
@@ -55,11 +68,11 @@ var Jilex = class Jilex extends HTMLScriptElement {
 		// this.initialize();
 	}
     
-    boot()
-    {
-    	if( this.options.implementStyles )
-	    	document._createStyleImpl();
-    }
+    // boot()
+    // {
+    // 	if( this.options.implementStyles )
+	   // 	document._createStyleImpl();
+    // }
     
     getUniqueId( node )
     {
@@ -100,6 +113,42 @@ var Jilex = class Jilex extends HTMLScriptElement {
 		return [target, realPropPath.join('.')]
 	}
     
+    exists( url )
+    {
+    	return new Promise(( done, fail )=>
+		{
+			var xhr = new XMLHttpRequest()
+			  , exts = Array.from( this.options.extensions )
+			  , test = ()=> {
+					if( !exts.length ) return;
+					console.log(`${url}.${exts[0]}`)
+					xhr.open('HEAD', `${url}.${exts.shift()}`, true);
+					xhr.send();
+				}
+			  ;
+			
+			xhr.onload = function()
+			{
+					console.log('options: ',this.status)
+				if( this.status == 404 ) test();
+				if( this.status == 200 )
+				{
+					done( this.responseURL )
+				}
+			}
+			xhr.onerror = function()
+			{
+				// TODO: try to load .js instead
+				console.log( arguments, this.status + ' ' + this.statusText )
+				// fail( this.status + ' ' + this.statusText )
+				if( !exts.length )
+					return fail( false );
+				
+				test()
+			}
+			test()
+		})
+    }
 	
 	load( url, type )
 	{
@@ -113,7 +162,41 @@ var Jilex = class Jilex extends HTMLScriptElement {
 				
 				if( this.status == 200 )
 				{
-					// let type = this.getResponseHeader('Content-Type');
+					let type = this.getResponseHeader('Content-Type');
+					console.log('type: %s', type);
+					
+					if( /text.css/.test(type) )
+					{
+						
+					}
+					else if( /(text|application)\/(xhtml\+)?xml/.test(type) )
+					{
+						var doc = new Document(this.response, 'application/xhtml+xml');
+						var errors = doc.parserErrors;
+						if( errors.length )
+						{
+							console.error( 'Parser errors\n%o', errors );
+						}
+						
+					}
+					else if( /text\/html/.test(type) )
+					{
+						var doc = new Document(this.response, 'text/html');
+						var errors = doc.parserErrors;
+						if( errors.length )
+						{
+							console.error( 'Parser errors\n%o', errors );
+						}
+					}
+					else if( /application\/json(\+ld)?/.test(type) )
+					{
+						done( JSON.parse(this.response) )
+					}
+					else
+					{
+						
+					}
+					
 					var doc = new Document(this.response, 'application/xhtml+xml');
 					var errors = doc.parserErrors;
 					if( errors.length )
@@ -158,11 +241,10 @@ var Jilex = class Jilex extends HTMLScriptElement {
 		{
 			if( this.avoidNs.indexOf(node.namespaceURI) == -1 
 			 && this.avoidNames.indexOf(node.localName) == -1 )
-				return this.load( node.url+'.xhtml' )
-						.catch( e=> this.loadComponent(node.url+'.')
-											.catch( e=> this.loadComponent(node.url+'.js') ) )
+				return this.load( node.url )
+						.catch( e=> console.error('Document not loaded %o', e) )
 						.then( doc => {
-							doc.initialize();
+							doc.preinitialize();
 							return doc;
 						})
 				// return new Promise(function( done, fail )
@@ -251,7 +333,7 @@ var Jilex = class Jilex extends HTMLScriptElement {
 				
 				var sup = doc.documentElement.constructor,
 					supTag = doc.documentElement.localName,
-					ns = doc.documentElement.namespace, // TODO: Bug fix: namespace getter return undefined 1st time
+					ns = doc.documentElement.namespace,
 					pack = doc.documentElement.namespace.packageName,
 					klass = 'class ' + className + ' extends ' + (pack ? pack + '.' : '') + supTag,
 					methods = [
@@ -306,19 +388,19 @@ document.currentScript.remove();
 // 									.split(/\n/)
 // 										.filter( s => s != '' )
 
-Jilex.catchParserError = function( root = document )
-{
-    return root.$('parsererror')
-                    .map( n => (
-                        n.remove(),
-                        n.$('div')[0]
-                            .textContent.trim()
-                                .split('\n')
-                                    .map( s => /line\s(\d{1,10})\sat\scolumn\s(\d{1,10}):(.*)/.exec(s) )
-                                    .map( a => `<parsererror line="${a[1]}" column="${a[2]}">${a[3]}</parsererror>` )
-                    ))
-}
-Jilex.parserErrors = Jilex.catchParserError();
+// Jilex.catchParserError = function( root = document )
+// {
+//     return root.$('parsererror')
+//                     .map( n => (
+//                         n.remove(),
+//                         n.$('div')[0]
+//                             .textContent.trim()
+//                                 .split('\n')
+//                                     .map( s => /line\s(\d{1,10})\sat\scolumn\s(\d{1,10}):(.*)/.exec(s) )
+//                                     .map( a => `<parsererror line="${a[1]}" column="${a[2]}">${a[3]}</parsererror>` )
+//                     ))
+// }
+// Jilex.parserErrors = Jilex.catchParserError();
 	
     
   //  function loadManifest( _xmlns )
