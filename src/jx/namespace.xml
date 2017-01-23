@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<Namespace xmlns="http://ns.devingfx.com/jxml/2015" color="green" alias="jx">
-<!--<componentPackage>-->
-	
-	<Component id="Namespace"	class="jx.Namespace"		url="Namespace.js" />
-	<Component id="Component"	class="jx.Component"		url="Component.js" />
-	
-</Namespace>
-<!--</componentPackage>-->
