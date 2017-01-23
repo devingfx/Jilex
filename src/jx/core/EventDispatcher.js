@@ -21,7 +21,7 @@
 	
 // }
 
-class EventDispatcher {
+export class EventDispatcher {
 	
 	/**
 	 * extend

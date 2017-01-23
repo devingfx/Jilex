@@ -4,7 +4,7 @@
  * Creates or get a package object (ak simple object) via a qualified name in dot notation.
  * @param {String} QName A string representing a qualified name as 'pack.age.nested.*'.
  */
-function Package( QName )
+export function Package( QName )
 {
 	var uri = QName, cur, tar = window;
 	if( /^http|^library/.test(QName) )
@@ -27,7 +27,6 @@ function Package( QName )
 	return tar;
 }
 
-exports.Package = Package;
 /**
  * aliases
  */
@@ -42,8 +41,7 @@ Package.aliases = {
  * Natives.* package
  * Used to save native classes before extending it.
  */
-Package('Natives.*');
-exports.Natives = {
+export var Natives = {
 	EventTarget: EventTarget,
 	Node: Node,
 	Attr: Attr,

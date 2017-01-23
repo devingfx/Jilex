@@ -4,7 +4,8 @@
   "description": "Jilex is a framework to make Flex style webapps (RIA) in javascript.",
   "main": "index.js",
   "directories": {
-    "test": "tests"
+    "test": "tests",
+    "packages": "jspm_packages"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -33,5 +34,12 @@
     "gulp": "^3.9.1",
     "gulp-rename": "^1.2.2",
     "through2": "^2.0.1"
+  },
+  "jspm": {
+    "directories": {
+      "test": "tests"
+    },
+    "dependencies": {},
+    "devDependencies": {}
   }
 }

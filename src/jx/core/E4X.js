@@ -314,7 +314,11 @@ html('@catID == 0998789')	// Legacy E4X
 html('/div(@class="foo")')	// XPath
 
 
-Application
+html['jx:Application']
+let jx = Symbol.namespace['http://exemple.com']
+html[jx].Application
+html.jx$Application
+html.jx_Application
 
 
 

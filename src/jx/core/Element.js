@@ -1,3 +1,5 @@
+import { Package, Natives } from '../Package.js'
+
 /*
 *: modified native
 >: can be apllied on
