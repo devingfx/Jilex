@@ -208,22 +208,32 @@ window.Node = class Node extends Natives.Node {
 	{
 		if( !this.pending && this.constructor == Natives.Element && this.namespaceURI != "http://www.w3.org/1999/xhtml" )
 		{
-			let useIt = module=> (delete this.pending) && this.extends( module[this.localName] || module );
+			let useIt = module=> (delete this.pending) && this.extends( module[this.localName] || module )
 			// debugger;
 			// console.log('upgrade node: %o', this);
 			this.pending = true;
-			if( /\.js$/.test(this.namespaceURI) )
-			{
-				return System.import( this.namespaceURI )
-					.then( useIt )
-			}
-			else
-			{
-				return System.import( `${this.namespaceURI}/${this.localName}.js` )
-				// document.namespaces[this.namespaceURI][0].import( `${this.localName}.js` )
-					.then( useIt )
-			}
-			// this.extends(class extends Element{get done(){return true}})
+			
+			System.normalize( this.namespaceURI )
+				.then( uri=> {//debugger;
+					// /\.js$/.test(uri) ? 
+					System.import( this.namespaceURI+(
+						/\.js$/.test(uri) ? ''
+						: `/${this.localName}.js`
+					))
+						.then( useIt )
+				})
+			// if( /\.js$/.test(this.namespaceURI) )
+			// {
+			// 	return System.import( this.namespaceURI )
+			// 		.then( useIt )
+			// }
+			// else
+			// {
+			// 	return System.import( `${this.namespaceURI}/${this.localName}.js` )
+			// 	// document.namespaces[this.namespaceURI][0].import( `${this.localName}.js` )
+			// 		.then( useIt )
+			// }
+			// // this.extends(class extends Element{get done(){return true}})
 		}
 		return this
 	}

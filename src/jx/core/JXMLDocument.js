@@ -1,7 +1,8 @@
 // import '../namespace.js'
 import '../utils/DOM.js'
-import './Attr.js'
 import './Node.js'
+import './Document.prototype.js'
+import './Attr.js'
 import { Natives } from '../Package.js'
 
 // import MAIN from document.location+'!'  // don't work

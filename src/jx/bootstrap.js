@@ -1,13 +1,18 @@
-(function(){
+// (function(){
 
-var _recorder = new MutationObserver(function( records )
-{
-	// console.log( records );
-	_recorder.records = _recorder.records.concat( records )
-});
-var _recorder = new MutationObserver( records=> records.map( rec=> _records.push(rec) ) )
-_recorder.observe( document.documentElement, {childList: true, subtree: true} );
-_records = [];
+// aaavar _recorder = new MutationObserver(function( records )
+// {
+// 	// console.log( records );
+// 	_recorder.records = _recorder.records.concat( records )
+// });
+// window.__JilexRecorder = new MutationObserver( records=> window.__JilexRecorder._records = window.__JilexRecorder._records.concat(records) )
+  //;
+// window.__JilexRecorder._records = []
+// window.__JilexRecorder.observe( document.documentElement, {childList: true, subtree: true} );
+
+// $(cat jspm_packages/system.js|perl -pe 's/\\/\\\\/g')
+
+// $(cat config.js)
 
 // System.import(this.location+'!')
 // 			.then(module=> {
@@ -17,10 +22,11 @@ _records = [];
 // 			});
 			
 			
-System.import('jilex/core/Document.js')
+System.import('jilex/core/JXMLDocument.js')
 	.then( module=> {
-		_recorder.disconnect()
-		document.extends( module.JXMLDocument )._checkRecords( _records );
+		window.__JilexRecorder.disconnect()
+		document.extends( module.JXMLDocument )._checkRecords( window.__JilexRecorder._records )
+		delete window.__JilexRecorder
 	})
 // System.import('jilex/Jilex.minimal.js')
 // 	.then( module=> {
@@ -35,4 +41,4 @@ System.import('jilex/core/Document.js')
 // 		// delete _recorder
 // 	})
 
-})();
+// })();

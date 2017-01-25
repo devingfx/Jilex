@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-	  xmlns:jx="http://ns.devingfx.com/jxml/2015"
-	  xmlns:es6="http://www.ecma-international.org/ecma-262/6.0/"
-	  xmlns:js="data.*"
-	  xmlns:model="data.models.*"
-	  xmlns:gfx="themes.*"
-	  xmlns:jq="jquery.cdn"
-	  xmlns:my="/myComponents/"
-	  xmlns:local="*"
-	  xmlns:localPack="./severalClassesPackage.xml">
+	  xmlns:jx="jilex"
+	  xmlns:js="jilex/data"
+	  xmlns:model="jilex/data/models"
+	  xmlns:my="myComponents"
+	  xmlns:gfx="themes"
+	  xmlns:local=".">
 	
 	<!-- ChromeOS util: opening from Files app reloads the page but with http://localhost -->
-	<script src="//localhost:8080/launch-app.js" path="dev/Jilex Framework/src/bootstrap-XHTML.xhtml"></script>
+	<!--<script src="//localhost:8080/launch-app.js" path="dev/Jilex Framework/src/bootstrap-XHTML.xhtml"></script>-->
 	
 	<head>
 		<title>loading ...</title>
@@ -22,102 +19,29 @@
 		
 		
 		<style>
-        	@namespace url(http://www.w3.org/1999/xhtml);
-			@namespace jx url(http://ns.devingfx.com/jxml/2015);
-        	@namespace js url(data.*);
-        	@namespace ak url(js.AppKit);
-        	@namespace local url(*);
+			@namespace js url(http://www.ecma-international.org/ecma-262/6.0/);
 			
-			html, body {
-				background: transparent;
-				width: 100%;
-				height: 100%;
-				margin: 0;
-				padding: 0;
-			}
-			
-			jx|Button {
-				display: inline-block;
-				background: #8A2BE2;
-				padding: 5px 10px;
-				color: #FFF;
-				font-family: sans-serif;
-				border-radius: 4px;
-				box-shadow: 0 2px 7px #8A2BE2;
-				text-shadow: 0 1px 0 black;
-			}
-			jx|Button:before {
-				content: attr(label);
-			}
-			
-			/*local|Button,*/
-			js|* { display: none; }
+			js|Boolean,
+			js|Number,
+			js|String,
+			js|Array,
+			js|Object,
+			js|XML,
+			js|RegExp,
+			js|json
+			{display: none;}
 		</style>
 		
 		
 		<!--TODO: get rid of jquery dependency -->
-		<script src="./bower_components/jquery/dist/jquery.min.js"></script>
+		<!--<script src="./bower_components/jquery/dist/jquery.min.js"></script>-->
 		
-		
-		<script src="./jx/util/Array.create.js"></script>
-		
-		<script src="./jx/Package.js"></script>
-		<script src="./jx/package.js"></script>
-		<script src="./html/package.js"></script>
-		
-		
-		<script src="./jx/core/EventDispatcher.js"></script>
-		<script src="./jx/core/Loadable.js"></script>
-		<script src="./jx/core/Node.js"></script>
-		<script src="./jx/core/Document.js"></script>
-		<script src="./jx/core/Attr.js"></script>
-		<script src="./jx/core/XmlnsAttr.js"></script>
-		<script src="./jx/core/Element.js"></script>
-		<script src="./jx/core/Namespace.js"></script>
-		<script src="./jx/core/Component.js"></script>
-		
-		<script src="./jx/core/Jilex.js" 
-				debug="true" 
-				loadHttpNs="false"
-				recreateQNodes="false"
-				implementStyles="true" 
-				useShadowDOM="true"
-				extendHTMLElements="true">
-		</script>
+		<script src="../dist/system.js"></script>
 		
 		<!-- E4X experiment: needs to be last -->
 		<!--<script src="./jx/core/E4X.js"></script>-->
 		
-		<!--<script src="../dist/AppKit.js"></script>-->
-		<!--<script src="./jx/ObjectProxy.js"></script>-->
-		<!--<script src="./jx/Class.js"></script>-->
-		<!--<script src="./jx/ObjectProxy.js"></script>-->
-		
-		
-		<!--<script src="./jx/Node.load.js" implementStyles="true" useShadowDOM="true"></script>-->
-		
-		<!--<script src="./jx/Array.new.js"></script>-->
-		<!--<script src="./jx/Node.js"></script>-->
-		<!--<script src="./jx/NamespaceList.js"></script>-->
-		<!--<script src="./jx/Document.js"></script>-->
-		<!--<script src="./jx/Namespace.js" loadHttpNs="false"></script>-->
-		<!--<script src="./jx/Component.js"></script>-->
-		<!--<script src="./jx/ns.js" recreateQNodes="false"></script>-->
-		<!--<script src="./jx/jilex.js" useShadowDOM="false" implementStyles="true"></script>-->
-		
-		
 	</head>
-	
-	<!-- Namespace manifests can be included in the page -->
-	<jx:Namespace uri="http://ns.devingfx.com/jxml/2015">
-		<jx:Component id="Namespace"	class="jx.Namespace"></jx:Component>
-		<jx:Component id="Component"	class="jx.Component"></jx:Component>
-	</jx:Namespace>
-	
-	<jx:Namespace uri="*">
-		<jx:Component id="Demo"			url="Demo.xml"></jx:Component>
-	</jx:Namespace>
-	
 	<body debug="true">
 		
 		<local:MyComp text="Coucou"/>
@@ -147,12 +71,11 @@
 		
 		<js:XML source="./datas/catalog.xml"></js:XML>
 		
-		<Div/>
-		<Input/>
-		<Element/>
+		<div/>
+		<input/>
+		<element/>
 		<jx:Element/>
 		
-		<Demo xmlns="*"></Demo>
 		
 		<jx:Carousel/>
 		<jx:Editor/>
@@ -162,18 +85,5 @@
 			<jx:TextInput value="monde"/>
 		</Editor>
 		
-		<script type="text/js">
-			document.addEventListener('DOMContentLoaded', function()
-			{
-			    window.demo = document.querySelector('Demo');
-			    demo.addEventListener('created', function()
-			    {
-			    	// demo.appendChild( demo.namespace.Demo.documentElement.cloneNode(true))
-			    	window.html = rootsMan( demo );
-			    	
-			    })
-			    demo.load()
-			});
-		</script>
 	</body>
 </html>

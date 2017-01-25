@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-	  xmlns:js6="http://www.ecma-international.org/ecma-262/6.0/"
-	  xmlns:js="data.*"
-	  xmlns:model="data.models.*"
+	  xmlns:jx="jilex"
+	  xmlns:js="src/data"
+	  xmlns:model="data/models"
 	  xmlns:local="*">
 	
 	<!-- ChromeOS util: opening from Files app reloads the page but with http://localhost -->
-	<script src="../../../../launch-app.js" path="dev/Jilex Framework/src/bootstrap-HTML5.html"></script>
+	<!--<script src="../../../../launch-app.js" path="dev/Jilex Framework/src/bootstrap-HTML5.html"></script>-->
 	
 	<head>
 		<meta charset="utf-8">
@@ -30,77 +30,12 @@
 		
 		
 		<!--TODO: get rid of jquery dependency -->
-		<script src="./bower_components/jquery/dist/jquery.min.js"></script>
+		<!--<script src="./bower_components/jquery/dist/jquery.min.js"></script>-->
 		
+		<script src="../dist/bootstrap.js"></script>
 		
-		<script src="./jx/Array.new.js"></script>
-		<script src="./jx/Node.js"></script>
-		<script src="./jx/Document.js"></script>
-		<script src="./jx/Namespace.js" loadHttpNs="false"></script>
-		<script src="./jx/Component.js"></script>
-		<script src="./jx/ns.js" recreateQNodes></script>
-		<script src="./jx/jilex.js" useShadowDOM="false" implementStyles></script>
-		
-		
-		<script>
-			// var js = document.namespaces.js[0];
-			// js.Boolean = Boolean;
-			// js.Number = Number;
-			// Number.prototype.toValue = function()
-			// {
-			// 	if( this instanceof Element )
-			// 		return this.Class( this.innerHTML )
-			// 	else
-			// 		return this.valueOf()
-			// }
-			// js.String = String;
-			// js.Array = Array;
-			// js.Object = Object;
-			// document.namespaces.js.json = JSON.parse;
-			
-			// document.namespaces.k.Demo = function Demo()
-			// document.namespaces.local[0].Demo = function Demo()
-			// {
-			// 	var node = this;
-			// 	$.get('Demo.xml', {type:'xml'})
-			// 		.done(function( xml )
-			// 		{
-			// 			window.xml = xml;
-			// 			var $head = $('head', xml);
-			// 			window.$headers = $head.children().remove();
-			// 			$head.remove();
-			// 			node.appendChild( xml.documentElement.cloneNode(true) ); 
-			// 			$headers
-			// 				.filter(function(){return this.localName != "script"})
-			// 				.each( function(){$('head').append(this)} );
-			// 			var $scripts = $headers.filter('script')
-			// 				.each( function(){$('head').append(this)} );
-			// 		})
-			// 		.fail(function( xml )
-			// 		{
-			// 			window.xml = xml;
-			// 			console.log(
-			// 				(new DOMParser)
-			// 					.parseFromString(xml.responseText, "text/xml")
-			// 						.querySelectorAll('parsererror div')
-			// 			);
-			// 		})
-				
-			// }
-			
-		</script>
 		
 	</head>
-	
-	<!-- Namespace manifests can be included in the page -->
-	<jx:Namespace uri="http://ns.devingfx.com/jxml/2015">
-		<jx:Component id="Namespace"	class="jx.Namespace"></jx:Component>
-		<jx:Component id="Component"	class="jx.Component"></jx:Component>
-	</jx:Namespace>
-	
-	<jx:Namespace uri="*">
-		<jx:Component id="Demo"			url="Demo.xml"></jx:Component>
-	</jx:Namespace>
 	
 	<body debug="true">
 		
@@ -139,9 +74,9 @@
 			<js:RegExp modifier="g">(.*?)@(.*?).(.*?)</js:RegExp>
 		</js:Array>
 		
-		<js:XML source="./datas/catalog.xml"></js:XML>
+		<!--<js:XML source="./datas/catalog.xml"></js:XML>-->
 	
-		<local:Demo></local:Demo>
+		<!--<local:Demo></local:Demo>-->
 		
 	</body>
 </html>
