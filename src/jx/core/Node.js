@@ -155,8 +155,9 @@ window.Node = class Node extends Natives.Node {
 	 * If needed a new node is created  and returned replacing the original in tree, otherwise
 	 * the original is returned. You should always use the returned value:
 	 * node.fix()
-	 * node.upgrade()		// is bad HumKey
-	 * node.fix().upgrade()	// the good one is upgraded
+	 * node.upgrade()				// is bad HumKey
+	 * ----------------
+	 * node = node.fix().upgrade()	// the good one is upgraded
 	 */
 	fix( setIdContext:Boolean = true )
 	{
@@ -208,20 +209,38 @@ window.Node = class Node extends Natives.Node {
 	{
 		if( !this.pending && this.constructor == Natives.Element && this.namespaceURI != "http://www.w3.org/1999/xhtml" )
 		{
-			let useIt = module=> (delete this.pending) && this.extends( module[this.localName] || module )
+			let useIt = module=> {
+					delete this.pending
+					this.extends( module[this.localName] || module )
+				}
 			// debugger;
 			// console.log('upgrade node: %o', this);
 			this.pending = true;
 			
-			System.normalize( this.namespaceURI )
-				.then( uri=> {//debugger;
-					// /\.js$/.test(uri) ? 
-					System.import( this.namespaceURI+(
-						/\.js$/.test(uri) ? ''
-						: `/${this.localName}.js`
-					))
+			// Object.keys(System.aliases)
+			// 	.map(alias=> {
+			// 		let reg=new RegExp(`^${alias}$`.replace(/\*/g,'(.*?)'))
+			// 		let res = reg.exec(root.namespaceURI+'/Element.js')
+			// 		return res && System.aliases[alias].replace('*',res[1])
+			// 	})
+			// 	.filter(o=>o)
+			let uri = System.normalizeSync( this.namespaceURI )
+			// System.normalize( this.namespaceURI )
+				// .then( uri=> {//debugger;
+					// ;( /\.js$/.test(uri) 
+					// 	? System.import( this.namespaceURI )
+					// 	: System.import( `${this.namespaceURI}/${this.localName}.js` )
+					// System.import( this.namespaceURI+(
+					// 	/\.js$/.test(uri) ? ''
+					// 	: `/${this.localName}.js`
+					// ))
+					System.import( 
+						/\.js$/.test(uri)
+							? this.namespaceURI
+							: `${this.namespaceURI}/${this.localName}.js`
+					)
 						.then( useIt )
-				})
+				// })
 			// if( /\.js$/.test(this.namespaceURI) )
 			// {
 			// 	return System.import( this.namespaceURI )
@@ -383,6 +402,75 @@ window.Node = class Node extends Natives.Node {
 		console.groupEnd();
 		
 		return xml;
+	}
+	
+	toClass( _class )
+	{
+	    let dom = this,
+						comp = this,
+						_super = comp.localName,
+						ns = comp.lookupNamespaceURI(comp.prefix),
+						_superFilename = /\.js$/.test(ns)
+											? ns
+											: `${ns}/${comp.localName}`,
+						imports = [],
+						scripts = Array.from( dom.querySelectorAll('script[type=class],Script') )
+									.map( script=> {
+										if( script.prefix+':'+script.localName == 'jx:Script' 
+										 || script.localName == 'script')
+										{
+											script.remove();
+											txt = txt.replace( outerHTML(script), '' )
+											return innerHTML(script)
+														.replace(/^\s*import\s.*?\n/, s=>imports.push(s)&&'')
+										}
+									}),
+						lines = comp.outerHTML.replace(/&gt;/g, '>').split('\n'),
+						children = ( lines.shift(),
+									lines.pop(),
+									lines.join('\n')
+									)
+						// children = Array.from( comp.childNodes )
+						// 			.map( node=> node.outerHTML
+						// 							? outerHTML( node )
+						// 								.replace(/&gt;/g, '>')
+						// 							: node instanceof Text
+						// 								? node.textContent
+						// 								: ''
+						// 			)
+						// 			.join('');
+						;
+		// -----------------------------
+		// Component()
+		// {
+			// super.Component();
+			// this.rawChildren.append( ...DOM\`$ {children}\` )
+			
+			// let bak = this.rawChildren;
+			// this.shadowRoot.append( this.rawChildren = DOM\`$ {txt.trim()}\` )
+			// document.xmlns.map( ns=> this.rawChildren.setAttributeNode(ns.cloneNode()) )
+			// Array.from( bak.childNodes )
+			// 	.map( child=> this.rawChildren.append(child) )
+			// bak.remove();
+		// }
+					return `
+		import { ${_super} } from '${_superFilename}'
+		import { CustomElement, Bindable } from 'jilex/decorators.js';
+		${imports.join('')}
+		
+		@CustomElement
+		export default class ${_class} extends ${_super} {
+			static get module(){return System._loader.moduleRecords[__moduleName] }
+			
+			${_class}()
+			{
+				this.${_super}();
+				this.rawChildren.append( ...DOM\`${children}\` )
+				return this;
+			}
+		${scripts.join('\n')}
+		}
+		`;
 	}
 }
 Object.setPrototypeOf( Natives.Attr.prototype, Node.prototype );

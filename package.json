@@ -44,6 +44,8 @@
       "test": "tests"
     },
     "dependencies": {},
-    "devDependencies": {}
+    "devDependencies": {
+      "typescript": "npm:typescript@^2.0.7"
+    }
   }
 }

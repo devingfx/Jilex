@@ -21,9 +21,10 @@
 // 				// _recorder.disconnect()
 // 			});
 			
-			
+// System.defaultJSExtensions = false
 System.import('jilex/core/JXMLDocument.js')
 	.then( module=> {
+		// System.config( {defaultJSExtensions: false} ) // wrong afterward transpile is dead
 		window.__JilexRecorder.disconnect()
 		document.extends( module.JXMLDocument )._checkRecords( window.__JilexRecorder._records )
 		delete window.__JilexRecorder
